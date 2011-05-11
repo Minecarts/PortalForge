@@ -1,4 +1,4 @@
-<project name="BukkitPlugin" default="dist" basedir=".">
+<project name="PortalForge" default="dist" basedir=".">
 	<dirname property="pdir" file="build.xml" /> 
 	<basename property="dirname" file="${pdir}"/> 
 	
@@ -14,9 +14,10 @@
 	</target>
 	
 	<target name="compile" depends="init">
-		<javac srcdir="${src}" destdir="${bin}" includeantruntime="false">
+		<javac srcdir="${src}" destdir="${bin}" includeantruntime="false" debug="true" debuglevel="lines,vars,source">
 			<classpath>
 				<pathelement location="${bukkit.jar}"/>
+				<pathelement location="C:/Minecraft/plugins/DBConnector.jar"/>
 			</classpath>
 		</javac>
 	</target>
