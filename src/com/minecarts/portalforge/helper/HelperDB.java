@@ -6,11 +6,15 @@ import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.text.MessageFormat;
 
+import java.util.ArrayList;
+
 import com.minecarts.portalforge.PortalForge;
 import com.minecarts.portalforge.portal.Portal;
 import com.minecarts.portalforge.portal.PortalType;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.Location;
 
 public class HelperDB {
@@ -89,12 +93,87 @@ public class HelperDB {
         return false;
     }
     
+    public void setPortalDestination(Location location, int portalId){
+        try{
+            Connection conn = this.getConnection();
+            PreparedStatement ps = conn.prepareStatement("UPDATE `portals` SET `dest_world` =?,`dest_x`=?,`dest_y`=?,`dest_z`=?,`dest_pitch`=?,`dest_yaw`=? WHERE `id`=? LIMIT 1");
+            if(ps == null){ //Query failed
+                conn.close();
+                plugin.log.warning("Set portal destination query failed");
+                return;
+            }
+            ps.setString(1, location.getWorld().getName());
+            ps.setDouble(2, location.getX());
+            ps.setDouble(3, location.getY());
+            ps.setDouble(4, location.getZ());
+            ps.setFloat(5, location.getPitch());
+            ps.setFloat(6, location.getYaw());
+            
+            ps.setInt(7, portalId);
+
+            ps.execute();
+
+            ps.close();
+            conn.close();
+        } catch (SQLException e) {
+           e.printStackTrace();
+        }
+    }
+    
+    public void setPortalVelocity(int portalId, float v){
+        try{
+            Connection conn = this.getConnection();
+            PreparedStatement ps = conn.prepareStatement("UPDATE `portals` SET `dest_vel`=? WHERE `id`=? LIMIT 1");
+            if(ps == null){ //Query failed
+                conn.close();
+                plugin.log.warning("Set portal velocity query failed");
+                return;
+            }
+            ps.setFloat(1, v);
+            ps.setInt(2, portalId);
+
+            ps.execute();
+
+            ps.close();
+            conn.close();
+        } catch (SQLException e) {
+           e.printStackTrace();
+        }
+    }
+    public ArrayList<Block> getPortalBlocksFromId(int portalId){
+        ArrayList<Block> portalBlocks = new ArrayList<Block>();
+        try{
+            Connection conn = this.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM `portal_blocks` WHERE `portal_id` = ?");
+            if(ps == null){
+                plugin.log.warning("GetPortalEndPointFromBlock query failed");
+                conn.close();
+                return portalBlocks;
+            }
+            ps.setInt(1, portalId);
+            ResultSet set = ps.executeQuery();
+            while(set.next()) {
+                org.bukkit.World world = Bukkit.getServer().getWorld(set.getString("world"));
+                if(world != null){
+                    Block block = world.getBlockAt(set.getInt("x"), set.getInt("y"), set.getInt("z"));
+                    if(block != null && block.getType() == Material.PORTAL){
+                        portalBlocks.add(block);
+                    }
+                }
+            }
+            set.close();
+            ps.close();
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return portalBlocks;
+    }
     public Portal getPortalFromBlockLocation(Location location){
         Portal portal = null;
         try{
-            System.out.println(location);
             Connection conn = this.getConnection();
-            PreparedStatement ps = conn.prepareStatement("SELECT `type`,`dest_world`,`dest_x`,`dest_y`,`dest_z`,`dest_pitch`,`dest_yaw` FROM `portals`,`portal_blocks` WHERE `portal_blocks`.`portal_id` = `portals`.`id` AND `portal_blocks`.`world` = ? AND `portal_blocks`.`x` = ? AND `portal_blocks`.`y` = ? AND `portal_blocks`.`z` = ? LIMIT 1");
+            PreparedStatement ps = conn.prepareStatement("SELECT `portals`.* FROM `portals`,`portal_blocks` WHERE `portal_blocks`.`portal_id` = `portals`.`id` AND `portal_blocks`.`world` = ? AND `portal_blocks`.`x` = ? AND `portal_blocks`.`y` = ? AND `portal_blocks`.`z` = ? LIMIT 1");
             if(ps == null){
                 plugin.log.warning("GetPortalEndPointFromBlock query failed");
                 conn.close();
@@ -104,12 +183,13 @@ public class HelperDB {
             ps.setInt(2, location.getBlockX());
             ps.setInt(3, location.getBlockY());
             ps.setInt(4, location.getBlockZ());
-            System.out.println(MessageFormat.format("{0},{1},{2},{3}",location.getWorld(),location.getBlockX(),location.getBlockY(),location.getBlockZ()));
             ResultSet set = ps.executeQuery();
             if (set.next()) {
-                if(Bukkit.getServer().getWorld(set.getString("dest_world")) != null){
-                    portal = new Portal();
+                portal = new Portal();
+                portal.id = set.getInt("id");
+                if(set.getString("dest_world")!= null && Bukkit.getServer().getWorld(set.getString("dest_world")) != null){
                     portal.endPoint = new Location(Bukkit.getServer().getWorld(set.getString("dest_world")),set.getInt("dest_x"),set.getInt("dest_y"),set.getInt("dest_z"),set.getFloat("dest_yaw"),set.getFloat("dest_pitch"));
+                    portal.exitVelocity = set.getFloat("dest_vel");
                     portal.type = PortalType.valueOf(set.getString("type")); 
                 }
                 set.close();
