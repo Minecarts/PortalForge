@@ -24,7 +24,7 @@ public class PortalCommand extends CommandHandler{
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         //TODO Handle the subcommand
         if(sender instanceof Player){
-            if(!sender.isOp()) return true;
+            if(!sender.isOp()) return true; //OpOnly(tm)!
             if(args.length == 0) return false;
             Player p = (Player) sender;
 
@@ -38,6 +38,7 @@ public class PortalCommand extends CommandHandler{
                 int portalId = plugin.dbHelper.createPortal();
                 plugin.activePortalDesigns.put(p.getName(), portalId);
                 p.sendMessage(MessageFormat.format("Created portal #{0}. Place the portal blocks for this portal.",portalId));
+                plugin.log(MessageFormat.format("{0} created portal #{1}",p.getName(),portalId));
                 plugin.previousInventory.put(p.getName(), p.getItemInHand());
                 p.setItemInHand(new ItemStack(Material.PORTAL,64));
                 return true;
@@ -46,8 +47,16 @@ public class PortalCommand extends CommandHandler{
             //Set a portal destination
             if(args[0].equalsIgnoreCase("dest") || args[0].equalsIgnoreCase("exit")){
                 if(plugin.activePortalDesigns.containsKey(p.getName())){
-                    plugin.dbHelper.setPortalDestination(p.getLocation(),plugin.activePortalDesigns.get(p.getName()));
-                    p.sendMessage("Portal exit location set to your current position.");
+                    int portalId = plugin.activePortalDesigns.get(p.getName());
+                    plugin.dbHelper.setPortalDestination(p.getLocation(),portalId);
+                    plugin.log(MessageFormat.format("{0} set destination of #{1} to ({2,number,#.##},{3,number,#.##},{4,number,#.##})",
+                            p.getName(),plugin,
+                            portalId,
+                            p.getLocation().getX(),
+                            p.getLocation().getY(),
+                            p.getLocation().getZ()
+                    ));
+                    p.sendMessage("Portal #"+portalId+" exit location set to your current position.");
                     return true;
                 }
             }
@@ -55,8 +64,10 @@ public class PortalCommand extends CommandHandler{
             if(args[0].equalsIgnoreCase("vel") || args[0].equalsIgnoreCase("velocity")){
                 if(plugin.activePortalDesigns.containsKey(p.getName())){
                     if(args.length == 2){
-                        plugin.dbHelper.setPortalVelocity(plugin.activePortalDesigns.get(p.getName()), Float.parseFloat(args[1]));
-                        p.sendMessage("Portal velocity set to: " + args[1]);
+                        int portalId = plugin.activePortalDesigns.get(p.getName());
+                        plugin.dbHelper.setPortalVelocity(portalId, Float.parseFloat(args[1]));
+                        plugin.log(MessageFormat.format("{0} set velocity of Portal #{1} to {2}", p.getName(),portalId,args[1]));
+                        p.sendMessage("Portal #"+portalId+" velocity set to: " + args[1]);
                         return true;
                     } else {
                         p.sendMessage("/portal velocity <speed>");
@@ -73,6 +84,7 @@ public class PortalCommand extends CommandHandler{
                 if(args.length == 2){
                     plugin.activePortalDesigns.put(p.getName(), Integer.parseInt(args[1]));
                     p.sendMessage("Now editing portal #" + args[1]);
+                    plugin.log(p.getName() + " started editing Portal #" + args[1]);
                     return true;
                 } else {
                     p.sendMessage("/portal edit #ID");
@@ -84,7 +96,9 @@ public class PortalCommand extends CommandHandler{
             if(args[0].equalsIgnoreCase("done") || args[0].equalsIgnoreCase("save")){
                 if(plugin.activePortalDesigns.containsKey(p.getName())){
                     int portalId = plugin.activePortalDesigns.remove(p.getName());
+                    plugin.log(p.getName() + " finished editing Portal #"+portalId);
                     p.sendMessage(MessageFormat.format("Portal #{0} editing complete",portalId));
+                    plugin.cache.clearByPortal(portalId); //Clear the cache because we made changes
                     if(p.getItemInHand().getType() == Material.PORTAL){
                         if(plugin.previousInventory.containsKey(p.getName())){
                             p.setItemInHand(plugin.previousInventory.get(p.getName()));
@@ -109,7 +123,7 @@ public class PortalCommand extends CommandHandler{
                     return true;
                 }
             }
-            
+
             if(args[0].equalsIgnoreCase("info")){
                 if(args.length == 2){
                     ArrayList<Block> blocks = plugin.dbHelper.getPortalBlocksFromId(Integer.parseInt(args[1]));
@@ -124,6 +138,19 @@ public class PortalCommand extends CommandHandler{
                     return true;
                 } else {
                     p.sendMessage("/portal info #ID");
+                    return true;
+                }
+            }
+
+            if(args[0].equalsIgnoreCase("clear")){
+                if(args.length == 2){
+                    plugin.cache.clearByPortal(Integer.parseInt(args[1]));
+                    p.sendMessage("Cache cleared for Portal #" + args[1]);
+                    plugin.log("Cache cleared for Portal #" + args[1]);
+                    
+                    return true;
+                } else {
+                    p.sendMessage("/portal clear #ID");
                     return true;
                 }
             }

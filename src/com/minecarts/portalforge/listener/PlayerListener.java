@@ -4,7 +4,6 @@ import org.bukkit.Material;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.entity.Player;
 
 import com.minecarts.portalforge.PortalForge;
 
@@ -21,15 +20,23 @@ public class PlayerListener extends org.bukkit.event.player.PlayerListener{
                 //Try and remove it if it's a portal block
                 if(plugin.dbHelper.removeBlockFromUnknownField(e.getClickedBlock().getLocation())){
                     e.getPlayer().sendMessage("Removed portal block from its portal");
+                    plugin.log(e.getPlayer().getName() + " removed block from portal" + e.getClickedBlock().getLocation());
                     e.getClickedBlock().setType(Material.AIR);
                 }
             }
+        } else if (e.getAction() == Action.RIGHT_CLICK_BLOCK && e.getPlayer().getItemInHand().getType() == Material.FLINT_AND_STEEL){
+            org.bukkit.block.Block block = e.getClickedBlock();
+            if(block.getType() == Material.OBSIDIAN){
+            }
+            //See if this player is trying to ignite a portal
         }
+        
         //e.setCancelled(true);
     }
-    
+
     @Override
     public void onItemHeldChange(PlayerItemHeldEvent e){
+        /*
         Player p = e.getPlayer();
         if(plugin.activePortalDesigns.containsKey(e.getPlayer().getName())){
             if(p.getItemInHand().getType() == Material.PORTAL){
@@ -44,5 +51,6 @@ public class PlayerListener extends org.bukkit.event.player.PlayerListener{
                 plugin.activePortalDesigns.remove(p.getName());
             }
         }
+        */
     }
 }

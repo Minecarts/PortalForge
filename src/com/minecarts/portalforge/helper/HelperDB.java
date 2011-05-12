@@ -22,7 +22,11 @@ public class HelperDB {
     public HelperDB(PortalForge plugin){
         this.plugin = plugin;
     }
+    
     public int createPortal(){
+        return createPortal(PortalType.GENERIC);
+    }
+    public int createPortal(PortalType type){
         int lastInsertedId = -1;
         try{
             Connection conn = this.getConnection();
@@ -31,7 +35,7 @@ public class HelperDB {
                 conn.close();
                 plugin.log.warning("Insert Portal query failed");
             }
-            ps.setString(1, "GENERIC");
+            ps.setString(1, type.name());
 
             ps.execute();
             ResultSet rskey = ps.getGeneratedKeys();
@@ -170,7 +174,10 @@ public class HelperDB {
         return portalBlocks;
     }
     public Portal getPortalFromBlockLocation(Location location){
-        Portal portal = null;
+        //See if it's in the cache first
+        Portal portal = plugin.cache.getPortal(location);
+        if(portal != null){ return portal; }
+
         try{
             Connection conn = this.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT `portals`.* FROM `portals`,`portal_blocks` WHERE `portal_blocks`.`portal_id` = `portals`.`id` AND `portal_blocks`.`world` = ? AND `portal_blocks`.`x` = ? AND `portal_blocks`.`y` = ? AND `portal_blocks`.`z` = ? LIMIT 1");
@@ -190,7 +197,7 @@ public class HelperDB {
                 if(set.getString("dest_world")!= null && Bukkit.getServer().getWorld(set.getString("dest_world")) != null){
                     portal.endPoint = new Location(Bukkit.getServer().getWorld(set.getString("dest_world")),set.getInt("dest_x"),set.getInt("dest_y"),set.getInt("dest_z"),set.getFloat("dest_yaw"),set.getFloat("dest_pitch"));
                     portal.exitVelocity = set.getFloat("dest_vel");
-                    portal.type = PortalType.valueOf(set.getString("type")); 
+                    portal.type = PortalType.valueOf(set.getString("type"));
                 }
                 set.close();
             }
@@ -199,6 +206,7 @@ public class HelperDB {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        plugin.cache.setPortal(location, portal);
         return portal;
     }
     

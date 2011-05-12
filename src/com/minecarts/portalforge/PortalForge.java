@@ -1,5 +1,6 @@
 package com.minecarts.portalforge;
 
+import java.text.MessageFormat;
 import java.util.logging.Logger;
 
 import org.bukkit.plugin.PluginManager;
@@ -12,6 +13,7 @@ import com.minecarts.dbconnector.DBConnector;
 import com.minecarts.portalforge.command.PortalCommand;
 import com.minecarts.portalforge.listener.*;
 import com.minecarts.portalforge.helper.*;
+import com.minecarts.portalforge.portal.NetherPortal;
 
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -20,10 +22,9 @@ import org.bukkit.entity.Entity;
 
 public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
     
-    //TODO: Portal use logging
-    //Nether portal ignition and logging
-    //Nether portal usage inserting into DB for existing portals not yet tracked
-    //Code cleaning
+    //TODO:
+    //DB query caching
+    //cmd: portal clearcache or similar (or updated flags in DB?)
     
 	public final Logger log = Logger.getLogger("com.minecarts.portalforge");
 	
@@ -33,6 +34,8 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
 	
 	public DBConnector dbc;
 	public HelperDB dbHelper;
+	public HelperCache cache;
+	public NetherPortal netherPortal;
 	
 	public HashMap<String, Integer> activePortalDesigns = new HashMap<String, Integer>();
 	public ArrayList<Entity> entityPortaling = new ArrayList<Entity>();
@@ -46,6 +49,8 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         //Database Connector
         this.dbc = (DBConnector) pm.getPlugin("DBConnector");
         this.dbHelper = new HelperDB(this);
+        this.netherPortal = new NetherPortal(this);
+        this.cache = new HelperCache(this);
 
         //Register our events
         pm.registerEvent(Event.Type.BLOCK_BREAK, this.blockListener, Event.Priority.Monitor,this);
@@ -62,5 +67,9 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
     
     public void onDisable(){
         
+    }
+    
+    public void log(String msg){
+        System.out.println("NetherPortal> " + msg);
     }
 }

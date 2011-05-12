@@ -59,8 +59,8 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
                             }
                         }
                         ((Player)entity).sendMessage(MessageFormat.format("This portal{0} is not linked anywhere", data));
-                        //entity.teleport(new Location(Bukkit.getServer().getWorld("world"),-22,72,62));
-                        //plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new portalKnockback(plugin,entity,e.getBlock().getLocation()));
+                        plugin.log(MessageFormat.format("{0} tried to use unlinked portal {1}",entity,portal.id));
+                        //And clear their state 2 seconds later
                         plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(entity),40);
                     }
                    
@@ -107,9 +107,29 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
                 plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(e),40);
                 e.teleport(portal.endPoint);
                 e.setVelocity(e.getLocation().getDirection().normalize().multiply(portal.exitVelocity));
+                
+                //Display to console log
+                plugin.log(MessageFormat.format("{11} used Portal #{0} ({1}): [{2,number,#.##}, {3,number,#.##}, {4,number,#.##}]->[{5,number,#.##}, {6,number,#.##}, {7,number,#.##}] [Pitch:{8},Yaw: {9},Velocity: {10}]",
+                        portal.id,
+                        portal.type,
+                        e.getLocation().getX(),
+                        e.getLocation().getY(),
+                        e.getLocation().getZ(),
+                        portal.endPoint.getX(),
+                        portal.endPoint.getY(),
+                        portal.endPoint.getZ(),
+                        portal.endPoint.getPitch(),
+                        portal.endPoint.getYaw(),
+                        portal.exitVelocity,
+                        e.toString()
+                        ));
+                
             } else {
                 //It was blocked, display a message?
-                System.out.println("Portal exit blocked:" + portal.endPoint);
+                if(e instanceof Player){
+                    ((Player)e).sendMessage("This portal exit is obstructed");
+                }
+                plugin.log("Portal exit blocked:" + portal.endPoint);
                 plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(e),40);
             }
             
