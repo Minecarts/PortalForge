@@ -152,6 +152,22 @@ public class PortalCommand extends CommandHandler{
                 }
                 return true;
             }
+            
+            if(args[0].equalsIgnoreCase("delete")){
+                if(args.length == 2){
+                    int portalId = Integer.parseInt(args[1]);
+                    for(Block b : plugin.dbHelper.getPortalBlocksFromId(portalId)){
+                        plugin.dbHelper.removeBlockFromUnknownField(b.getLocation());
+                        b.setType(Material.AIR);
+                        plugin.logSendMessage(p, MessageFormat.format("{0} deleted portal [Block: ({1,number,#.##},{2,number,#.##},{3,number,#.##}] #{4}",p.getName(),b.getX(),b.getY(),b.getZ(),portalId));
+                    }
+                    plugin.cache.clearByPortal(portalId);
+                    plugin.logSendMessage(p,"Portal deleted: #" + portalId);
+                } else {
+                    p.sendMessage("/portal delete #ID");
+                }
+                return true;
+            }
         } else {
             //Command line stuff?
         }

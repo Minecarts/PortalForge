@@ -58,8 +58,8 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
                                 data = "(No id but in DB?)";
                             }
                         }
-                        ((Player)entity).sendMessage(MessageFormat.format("This portal{0} is not linked anywhere", data));
-                        plugin.log(MessageFormat.format("{0} tried to use unlinked portal {1}",entity,portal.id));
+                        player.sendMessage(MessageFormat.format("This portal{0} is not linked anywhere.", data));
+                        plugin.log(MessageFormat.format("{0} tried to use unlinked portal: {1}",player.getName(),data));
                         //And clear their state 2 seconds later
                         plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(entity),40);
                     }
@@ -126,7 +126,7 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
             } else {
                 //It was blocked, display a message?
                 if(e instanceof Player){
-                    ((Player)e).sendMessage("This portal exit is obstructed");
+                    ((Player)e).sendMessage("This portal exit is obstructed.");
                 }
                 plugin.log("Portal exit blocked:" + portal.endPoint);
                 plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(e),40);
