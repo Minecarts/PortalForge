@@ -72,6 +72,24 @@ public class HelperDB {
            e.printStackTrace();
         }
     }
+    
+    public void removePortalRecord(int portalId){
+        try{
+            Connection conn = this.getConnection();
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM portals WHERE `id`=? LIMIT 1");
+            if(ps == null){ //Query failed
+                conn.close();
+                plugin.log.warning("Delete Portal record failed");
+            }
+            ps.setInt(1, portalId);
+            ps.executeUpdate();
+            ps.close();
+            conn.close();
+        } catch (SQLException e) {
+           e.printStackTrace();
+        }
+    }
+    
     public boolean removeBlockFromUnknownField(Location location){
         try{
             Connection conn = this.getConnection();
