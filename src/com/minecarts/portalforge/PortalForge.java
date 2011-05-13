@@ -26,6 +26,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
     private final PlayerListener playerListener = new PlayerListener(this);
     private final EntityListener entityListener = new EntityListener(this);
     private final BlockListener blockListener = new BlockListener(this);
+    private final PortalListener portalListener = new PortalListener(this);
     
     public DBConnector dbc;
     public HelperDB dbHelper;
@@ -48,11 +49,12 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         this.cache = new HelperCache(this);
 
         //Register our events
-        pm.registerEvent(Event.Type.BLOCK_BREAK, this.blockListener, Event.Priority.Monitor,this);
         pm.registerEvent(Event.Type.BLOCK_PLACE, this.blockListener, Event.Priority.Lowest,this);
+        pm.registerEvent(Event.Type.BLOCK_BREAK, this.blockListener, Event.Priority.Monitor,this);
         pm.registerEvent(Event.Type.IN_PORTAL,this.entityListener,Event.Priority.Monitor,this);
         pm.registerEvent(Event.Type.PLAYER_INTERACT, this.playerListener, Event.Priority.Monitor, this);
         pm.registerEvent(Event.Type.PLAYER_ITEM_HELD, this.playerListener, Event.Priority.Monitor, this);
+        pm.registerEvent(Event.Type.CUSTOM_EVENT, this.portalListener, Event.Priority.Monitor, this);
 
         //Register commands
         getCommand("portal").setExecutor(new PortalCommand(this));
