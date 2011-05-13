@@ -36,13 +36,13 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
                     if(portal.type == PortalType.GENERIC){
                         plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new teleportLater(plugin,entity,portal));
                     } else if (portal.type == PortalType.HOME){
-                        //Check if it's a player and send them to their home point
-                        //Send them to their home point
+                        //Check if it's a player and send them to their home point if so
                     } else if (portal.type == PortalType.NETHER){
                         //TO THE NETHER!
                     } else {
                         if(entity instanceof Player){
-                            ((Player)entity).sendMessage("Unknown poral type: " + portal.type);
+                            plugin.log("ERROR: " + portal.id +" has unknown portal type: " + portal.type);
+                            ((Player)entity).sendMessage("Unknown portal type: " + portal.type);
                         }
                     }
                 } else {
@@ -100,16 +100,12 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
                             ));
                 }
             }
-            //Check to see if the end point is blocked (this check should be improved)
+            //Check to see if the end point is blocked (@TODO: this check should be improved)
             if(portal.endPoint.getWorld().getBlockAt(portal.endPoint).getRelative(BlockFace.UP).getType() == Material.AIR){
-            //if(portal.endPoint.getWorld().getBlockAt(portal.endPoint.setY(portal.endPoint.getY() + 1)).getType() == Material.AIR){
-                //plugin.entityPortaling.remove(e);
-                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(e),40);
-                e.teleport(portal.endPoint);
-                e.setVelocity(e.getLocation().getDirection().normalize().multiply(portal.exitVelocity));
-                
+                String entityName = (e instanceof Player) ? ((Player)e).getName() : e.toString() +"["+e.getEntityId()+"]";
                 //Display to console log
-                plugin.log(MessageFormat.format("{11} used Portal #{0} ({1}): [{2,number,#.##}, {3,number,#.##}, {4,number,#.##}]->[{5,number,#.##}, {6,number,#.##}, {7,number,#.##}] [Pitch:{8},Yaw: {9},Velocity: {10}]",
+                //[P:{8,number,#.##},Y:{9,number,#.##},V:{10,number,#.##}] 
+                plugin.log(MessageFormat.format("{11} used Portal #{0} ({1}): [{2,number,#.##}, {3,number,#.##}, {4,number,#.##}]->[{5,number,#.##}, {6,number,#.##}, {7,number,#.##}]",
                         portal.id,
                         portal.type,
                         e.getLocation().getX(),
@@ -121,9 +117,12 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
                         portal.endPoint.getPitch(),
                         portal.endPoint.getYaw(),
                         portal.exitVelocity,
-                        e.toString()
+                        entityName
                         ));
-                
+
+                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(e),40);
+                e.teleport(portal.endPoint);
+                e.setVelocity(e.getLocation().getDirection().normalize().multiply(portal.exitVelocity));
             } else {
                 //It was blocked, display a message?
                 if(e instanceof Player){

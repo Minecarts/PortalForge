@@ -21,27 +21,22 @@ import java.util.ArrayList;
 import org.bukkit.entity.Entity;
 
 public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
+    public final Logger log = Logger.getLogger("com.minecarts.portalforge");
     
-    //TODO:
-    //DB query caching
-    //cmd: portal clearcache or similar (or updated flags in DB?)
+    private final PlayerListener playerListener = new PlayerListener(this);
+    private final EntityListener entityListener = new EntityListener(this);
+    private final BlockListener blockListener = new BlockListener(this);
     
-	public final Logger log = Logger.getLogger("com.minecarts.portalforge");
-	
-	private final PlayerListener playerListener = new PlayerListener(this);
-	private final EntityListener entityListener = new EntityListener(this);
-	private final BlockListener blockListener = new BlockListener(this);
-	
-	public DBConnector dbc;
-	public HelperDB dbHelper;
-	public HelperCache cache;
-	public NetherPortal netherPortal;
-	
-	public HashMap<String, Integer> activePortalDesigns = new HashMap<String, Integer>();
-	public ArrayList<Entity> entityPortaling = new ArrayList<Entity>();
-	public ArrayList<String> debuggingPortals = new ArrayList<String>();
-	public HashMap<String, ItemStack> previousInventory = new HashMap<String, ItemStack>();
-	
+    public DBConnector dbc;
+    public HelperDB dbHelper;
+    public HelperCache cache;
+    public NetherPortal netherPortal;
+    
+    public HashMap<String, Integer> activePortalDesigns = new HashMap<String, Integer>();
+    public ArrayList<Entity> entityPortaling = new ArrayList<Entity>();
+    public ArrayList<String> debuggingPortals = new ArrayList<String>();
+    public HashMap<String, ItemStack> previousInventory = new HashMap<String, ItemStack>();
+    
     public void onEnable() {
         PluginManager pm = getServer().getPluginManager();
         PluginDescriptionFile pdf = getDescription();
@@ -58,7 +53,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         pm.registerEvent(Event.Type.IN_PORTAL,this.entityListener,Event.Priority.Monitor,this);
         pm.registerEvent(Event.Type.PLAYER_INTERACT, this.playerListener, Event.Priority.Monitor, this);
         pm.registerEvent(Event.Type.PLAYER_ITEM_HELD, this.playerListener, Event.Priority.Monitor, this);
-        
+
         //Register commands
         getCommand("portal").setExecutor(new PortalCommand(this));
         

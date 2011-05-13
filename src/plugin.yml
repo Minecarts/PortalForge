@@ -8,4 +8,4 @@ description: >
 commands:
   portal:
     description: Access the portal menu
-    usage: "/<command> [create, dest, exit, vel, velocity, edit, done, save, debug, info]"
+    usage: "/<command> [create], [dest|exit], [vel|velocity <speed>], [edit #], [done|save], [debug], [info #]"
