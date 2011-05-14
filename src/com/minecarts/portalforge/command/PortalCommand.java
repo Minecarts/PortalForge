@@ -39,7 +39,11 @@ public class PortalCommand extends CommandHandler{
                 plugin.activePortalDesigns.put(p.getName(), portalId);
                 p.sendMessage(MessageFormat.format("Created portal #{0}. Place the portal blocks for this portal.",portalId));
                 plugin.log(MessageFormat.format("{0} created portal #{1}",p.getName(),portalId));
-                plugin.previousInventory.put(p.getName(), p.getItemInHand());
+                if(p.getItemInHand().getType() != Material.AIR && p.getItemInHand().getAmount() <= 0){
+                    plugin.previousInventory.put(p.getName(), p.getItemInHand());
+                } else {
+                    plugin.previousInventory.put(p.getName(), null);
+                }
                 p.setItemInHand(new ItemStack(Material.PORTAL,64));
                 return true;
             }
