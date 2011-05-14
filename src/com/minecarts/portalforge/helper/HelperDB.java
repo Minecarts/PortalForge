@@ -213,7 +213,7 @@ public class HelperDB {
                 portal = new Portal();
                 portal.id = set.getInt("id");
                 if(set.getString("dest_world")!= null && Bukkit.getServer().getWorld(set.getString("dest_world")) != null){
-                    portal.endPoint = new Location(Bukkit.getServer().getWorld(set.getString("dest_world")),set.getInt("dest_x"),set.getInt("dest_y"),set.getInt("dest_z"),set.getFloat("dest_yaw"),set.getFloat("dest_pitch"));
+                    portal.endPoint = new Location(Bukkit.getServer().getWorld(set.getString("dest_world")),set.getDouble("dest_x"),set.getDouble("dest_y"),set.getDouble("dest_z"),set.getFloat("dest_yaw"),set.getFloat("dest_pitch"));
                     portal.exitVelocity = set.getFloat("dest_vel");
                     portal.type = PortalType.valueOf(set.getString("type"));
                 }
@@ -225,6 +225,36 @@ public class HelperDB {
             e.printStackTrace();
         }
         plugin.cache.setPortal(location, portal);
+        return portal;
+    }
+    
+    public Portal getPortalById(int portalId){
+        Portal portal = null;
+        try{
+            Connection conn = this.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT `portals`.* FROM `portals` WHERE `portals`.`id` = ? LIMIT 1");
+            if(ps == null){
+                plugin.log.warning("GetPortalEndPointFromBlock query failed");
+                conn.close();
+                return portal;
+            }
+            ps.setInt(1, portalId);
+            ResultSet set = ps.executeQuery();
+            if (set.next()) {
+                portal = new Portal();
+                portal.id = set.getInt("id");
+                if(set.getString("dest_world")!= null && Bukkit.getServer().getWorld(set.getString("dest_world")) != null){
+                    portal.endPoint = new Location(Bukkit.getServer().getWorld(set.getString("dest_world")),set.getDouble("dest_x"),set.getDouble("dest_y"),set.getDouble("dest_z"),set.getFloat("dest_yaw"),set.getFloat("dest_pitch"));
+                    portal.exitVelocity = set.getFloat("dest_vel");
+                    portal.type = PortalType.valueOf(set.getString("type"));
+                }
+                set.close();
+            }
+            ps.close();
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return portal;
     }
     

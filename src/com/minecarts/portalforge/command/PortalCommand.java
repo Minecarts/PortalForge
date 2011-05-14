@@ -3,6 +3,7 @@ package com.minecarts.portalforge.command;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -11,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.block.Block;
 
 import com.minecarts.portalforge.*;
+import com.minecarts.portalforge.event.PortalSuccessEvent;
 import com.minecarts.portalforge.portal.Portal;
 import org.bukkit.entity.Player;
 
@@ -50,8 +52,13 @@ public class PortalCommand extends CommandHandler{
 
             //Set a portal destination
             if(args[0].equalsIgnoreCase("dest") || args[0].equalsIgnoreCase("exit")){
-                if(plugin.activePortalDesigns.containsKey(p.getName())){
-                    int portalId = plugin.activePortalDesigns.get(p.getName());
+                if(plugin.activePortalDesigns.containsKey(p.getName()) || args.length == 2){
+                    int portalId = 0;
+                    if(args.length == 2){
+                        portalId = Integer.parseInt(args[1]);
+                    } else {
+                        portalId = plugin.activePortalDesigns.get(p.getName());
+                    }
                     plugin.dbHelper.setPortalDestination(p.getLocation(),portalId);
                     plugin.log(MessageFormat.format("{0} set destination of #{1} to ({2,number,#.##},{3,number,#.##},{4,number,#.##})",
                             p.getName(),
@@ -62,7 +69,7 @@ public class PortalCommand extends CommandHandler{
                     ));
                     p.sendMessage("Portal #"+portalId+" exit location set to your current position.");
                 } else {
-                    p.sendMessage("You must be editing a portal to set the exit point");
+                    p.sendMessage("You must be editing a portal to set the exit point (or /portal exit #)");
                 }
                 return true;
             }
@@ -169,6 +176,19 @@ public class PortalCommand extends CommandHandler{
                     plugin.logSendMessage(p,"Portal deleted: #" + portalId);
                 } else {
                     p.sendMessage("/portal delete #ID");
+                }
+                return true;
+            }
+            
+            if(args[0].equalsIgnoreCase("use")){
+                if(args.length == 2){
+                    Portal portal = plugin.dbHelper.getPortalById(Integer.parseInt(args[1]));
+                    if(portal!= null && portal.endPoint != null){
+                        plugin.logSendMessage(p, "Used portal: " + args[1]);
+                        Bukkit.getServer().getPluginManager().callEvent(new PortalSuccessEvent(p,portal));
+                    }
+                } else {
+                    p.sendMessage("/portal use #ID");
                 }
                 return true;
             }
