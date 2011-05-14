@@ -68,6 +68,7 @@ public class PortalCommand extends CommandHandler{
                             p.getLocation().getZ()
                     ));
                     p.sendMessage("Portal #"+portalId+" exit location set to your current position.");
+                    plugin.cache.clearByPortal(portalId);
                 } else {
                     p.sendMessage("You must be editing a portal to set the exit point (or /portal exit #)");
                 }
@@ -82,6 +83,7 @@ public class PortalCommand extends CommandHandler{
                         plugin.dbHelper.setPortalVelocity(portalId, Float.parseFloat(args[1]));
                         plugin.log(MessageFormat.format("{0} set velocity of Portal #{1} to {2}", p.getName(),portalId,args[1]));
                         p.sendMessage("Portal #"+portalId+" velocity set to: " + args[1]);
+                        plugin.cache.clearByPortal(portalId);
                     } else {
                         p.sendMessage("/portal velocity <speed>");
                     }
@@ -153,7 +155,7 @@ public class PortalCommand extends CommandHandler{
                 return true;
             }
 
-            if(args[0].equalsIgnoreCase("clear")){
+            if(args[0].equalsIgnoreCase("clear") || args[0].equalsIgnoreCase("cache")){
                 if(args.length == 2){
                     plugin.cache.clearByPortal(Integer.parseInt(args[1]));
                     p.sendMessage("Cache cleared for Portal #" + args[1]);
