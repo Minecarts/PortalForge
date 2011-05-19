@@ -41,17 +41,19 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
                     if(entity instanceof Player){
                         Player player = (Player)entity;
                         String data = "";
-                        if(player.isOp()){
-                            if(portal == null){
-                                data = "(Not in DB)";
-                            } else if(portal.id != -1){
-                                data = MessageFormat.format("(#{0})", portal.id);
-                            } else {
-                                data = "(No id but in DB?)";
-                            }
+                        if(portal == null){
+                            data = "(Not in DB)";
+                        } else if(portal.id != -1){
+                            data = MessageFormat.format("(#{0})", portal.id);
+                        } else {
+                            data = "(No id but in DB?)";
                         }
-                        player.sendMessage(MessageFormat.format("This portal{0} is not linked anywhere.", data));
+
                         plugin.log(MessageFormat.format("{0} tried to use unlinked portal: {1}",player.getName(),data));
+
+                        if(!player.isOp()){ data = ""; }
+                        player.sendMessage(MessageFormat.format("This portal{0} is not linked anywhere.", data));
+
                         //And clear their state 2 seconds later
                         plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(plugin,entity),40);
                     }
