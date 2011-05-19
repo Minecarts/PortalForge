@@ -67,7 +67,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
     }
     
     public void log(String msg){
-        System.out.println("NetherPortal> " + msg);
+        System.out.println("PortalForge> " + msg);
     }
     public void logSendMessage(org.bukkit.entity.Player player, String msg){
         log(msg);
