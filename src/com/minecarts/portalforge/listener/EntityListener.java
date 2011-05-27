@@ -3,7 +3,7 @@ package com.minecarts.portalforge.listener;
 import java.text.MessageFormat;
 
 import org.bukkit.block.BlockFace;
-import org.bukkit.event.entity.EntityInPortalEvent;
+import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -26,14 +26,15 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
     }
     
     @Override
-    public void onEntityInPortal(EntityInPortalEvent e){
+    public void onEntityPortalEnter(EntityPortalEnterEvent e){
         //Fetch the portalId
         try{
             Entity entity = e.getEntity();
             if(plugin.entityPortaling.contains(entity)) return; //If they're already portaling, skip em.
             plugin.entityPortaling.add(entity);
 
-            Portal portal = plugin.dbHelper.getPortalFromBlockLocation(e.getBlock().getLocation());
+            Location blockLocation = e.getLocation().getBlock().getLocation(); //maybe just e.getLocation()?
+            Portal portal = plugin.dbHelper.getPortalFromBlockLocation(blockLocation);
                 if(portal!= null && portal.endPoint != null){
                     //Portal should be a success!
                     Bukkit.getServer().getPluginManager().callEvent(new PortalSuccessEvent(entity,portal));
@@ -49,13 +50,20 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
                             data = "(No id but in DB?)";
                         }
 
-                        plugin.log(MessageFormat.format("{0} tried to use unlinked portal: {1}",player.getName(),data));
-
-                        if(!player.isOp()){ data = ""; }
-                        player.sendMessage(MessageFormat.format("This portal{0} is not linked anywhere.", data));
-
-                        //And clear their state 2 seconds later
-                        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(plugin,entity),40);
+                        //It was probably a nether portal that somehow ended up in the DB without being created
+                        // should we start tracking this portal somehow?
+                        if(portal == null || portal.type == null || portal.type == PortalType.NETHER){
+                            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(plugin,entity),200); //clear 10 seconds later
+                            return;
+                        } else {
+                            plugin.log(MessageFormat.format("{0} tried to use unlinked portal: {1}",player.getName(),data));
+                            if(!player.isOp()){ data = ""; }
+                            player.sendMessage(MessageFormat.format("This portal{0} is not linked anywhere.", data));
+                            
+                            //And clear their state 2 seconds later
+                            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(plugin,entity),40);
+                            return;
+                        }
                     }
                    
                 }

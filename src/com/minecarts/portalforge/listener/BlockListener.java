@@ -45,6 +45,8 @@ public class BlockListener extends org.bukkit.event.block.BlockListener{
         //THIS WILL NOT WORK (YET) BECAUSE SUPERPICK DOES NOT THROW A BREAK EVENT
         if(e.isCancelled()) return;
         if(e.getBlock().getType() == Material.PORTAL){
+            e.setCancelled(true);
+            /*
             //Try and remove it from a field (although it may not have one)
             if(plugin.dbHelper.removeBlockFromUnknownField(e.getBlock().getLocation())){
                 e.getPlayer().sendMessage("Block removed from portal");
@@ -54,6 +56,7 @@ public class BlockListener extends org.bukkit.event.block.BlockListener{
                         e.getBlock().getY(),
                         e.getBlock().getZ()));
             }
+            */
         }
     }
 }
