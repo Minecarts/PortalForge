@@ -1,9 +1,12 @@
 package com.minecarts.portalforge.listener;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.block.Action;
+import org.bukkit.Location;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerPortalEvent;
 
 import com.minecarts.portalforge.PortalForge;
 
@@ -13,6 +16,21 @@ public class PlayerListener extends org.bukkit.event.player.PlayerListener{
         this.plugin = plugin;
     }
 
+    @Override
+    public void onPlayerPortal(PlayerPortalEvent e){
+        if(e.isCancelled()) return;
+        //They're portaling to the nether, so, lets cancel the event and port them ourselves
+        e.setCancelled(true);
+        System.out.println("Player " + e.getPlayer() + " portaled.");
+        if(e.getPlayer().getLocation().getWorld().getName().equalsIgnoreCase("world")){
+            //If they're in the world, send them to the nether
+            e.getPlayer().teleport(Bukkit.getServer().getWorld("world_nether").getSpawnLocation());
+        } else {
+            //Else, they're in the nether, send them to the world
+            e.getPlayer().teleport(Bukkit.getServer().getWorld("world").getSpawnLocation());
+        }
+    }
+    
     @Override
     public void onPlayerInteract(PlayerInteractEvent e){
         if(e.getAction() == Action.LEFT_CLICK_BLOCK && plugin.activePortalDesigns.containsKey(e.getPlayer().getName())){
