@@ -54,6 +54,7 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
                         // should we start tracking this portal somehow?
                         if(portal == null || portal.type == null || portal.type == PortalType.NETHER){
                             plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(plugin,entity),200); //clear 10 seconds later
+                            plugin.log(MessageFormat.format("{0} touched portal: {1}",player.getName(),data));
                             return;
                         } else {
                             plugin.log(MessageFormat.format("{0} tried to use unlinked portal: {1}",player.getName(),data));
