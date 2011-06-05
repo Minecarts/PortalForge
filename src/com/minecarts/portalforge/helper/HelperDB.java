@@ -37,7 +37,7 @@ public class HelperDB {
                 plugin.log.warning("Insert Portal query failed");
             }
             ps.setString(1, type.name());
-            ps.setString(1, activation.name());
+            ps.setString(2, activation.name());
 
             ps.execute();
             ResultSet rskey = ps.getGeneratedKeys();
