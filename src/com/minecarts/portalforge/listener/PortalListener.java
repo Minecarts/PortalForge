@@ -32,8 +32,9 @@ public class PortalListener extends CustomEventListener{
             PortalSuccessEvent e = (PortalSuccessEvent) event;
             Portal portal = e.getPortal().clone();
             Entity entity = e.getEntity();
-           
             
+            if(e.isCancelled()) return;
+
             if(portal.type == PortalType.GENERIC){
                 //Verify there is an endpoint for this generic
                 if(portal.endPoint == null){
