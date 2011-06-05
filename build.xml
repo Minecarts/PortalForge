@@ -18,7 +18,6 @@
 			<classpath>
 				<pathelement location="${bukkit.jar}"/>
 				<pathelement location="C:/Minecraft/plugins/DBConnector.jar"/>
-				<pathelement location="C:/Minecraft/plugins/TelePlusPlus.jar"/>
 			</classpath>
 		</javac>
 	</target>
