@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import com.minecarts.portalforge.PortalForge;
 import com.minecarts.portalforge.portal.Portal;
 import com.minecarts.portalforge.portal.PortalType;
+import com.minecarts.portalforge.portal.PortalActivation;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -24,18 +25,19 @@ public class HelperDB {
     }
     
     public int createPortal(){
-        return createPortal(PortalType.GENERIC);
+        return createPortal(PortalType.GENERIC, PortalActivation.INSTANT);
     }
-    public int createPortal(PortalType type){
+    public int createPortal(PortalType type, PortalActivation activation){
         int lastInsertedId = -1;
         try{
             Connection conn = this.getConnection();
-            PreparedStatement ps = conn.prepareStatement("INSERT INTO portals(`type`) VALUES (?)",PreparedStatement.RETURN_GENERATED_KEYS);
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO portals(`type`,`activation`) VALUES (?,?)",PreparedStatement.RETURN_GENERATED_KEYS);
             if(ps == null){ //Query failed
                 conn.close();
                 plugin.log.warning("Insert Portal query failed");
             }
             ps.setString(1, type.name());
+            ps.setString(1, activation.name());
 
             ps.execute();
             ResultSet rskey = ps.getGeneratedKeys();
@@ -212,10 +214,11 @@ public class HelperDB {
             if (set.next()) {
                 portal = new Portal();
                 portal.id = set.getInt("id");
+                portal.type = PortalType.valueOf(set.getString("type"));
+                portal.activation = PortalActivation.valueOf(set.getString("activation"));
                 if(set.getString("dest_world")!= null && Bukkit.getServer().getWorld(set.getString("dest_world")) != null){
                     portal.endPoint = new Location(Bukkit.getServer().getWorld(set.getString("dest_world")),set.getDouble("dest_x"),set.getDouble("dest_y"),set.getDouble("dest_z"),set.getFloat("dest_yaw"),set.getFloat("dest_pitch"));
                     portal.exitVelocity = set.getFloat("dest_vel");
-                    portal.type = PortalType.valueOf(set.getString("type"));
                 }
                 set.close();
             }
@@ -243,10 +246,11 @@ public class HelperDB {
             if (set.next()) {
                 portal = new Portal();
                 portal.id = set.getInt("id");
+                portal.type = PortalType.valueOf(set.getString("type"));
+                portal.activation = PortalActivation.valueOf(set.getString("activation"));
                 if(set.getString("dest_world")!= null && Bukkit.getServer().getWorld(set.getString("dest_world")) != null){
                     portal.endPoint = new Location(Bukkit.getServer().getWorld(set.getString("dest_world")),set.getDouble("dest_x"),set.getDouble("dest_y"),set.getDouble("dest_z"),set.getFloat("dest_yaw"),set.getFloat("dest_pitch"));
                     portal.exitVelocity = set.getFloat("dest_vel");
-                    portal.type = PortalType.valueOf(set.getString("type"));
                 }
                 set.close();
             }

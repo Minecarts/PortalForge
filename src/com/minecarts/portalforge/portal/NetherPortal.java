@@ -23,7 +23,7 @@ public class NetherPortal {
     }
     
     public void createPortalInDB(Block block){
-        int portalId = plugin.dbHelper.createPortal(PortalType.NETHER);
+        int portalId = plugin.dbHelper.createPortal(PortalType.NETHER,PortalActivation.DELAYED);
         
         //Add the 3 portal blocks (including the one passed in) to the DB
         this.addBlocksVertically(block,portalId);

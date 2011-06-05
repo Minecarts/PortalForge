@@ -15,6 +15,7 @@ import org.bukkit.util.Vector;
 import com.minecarts.portalforge.event.*;
 import com.minecarts.portalforge.PortalForge;
 import com.minecarts.portalforge.portal.Portal;
+import com.minecarts.portalforge.portal.PortalActivation;
 import com.minecarts.portalforge.portal.PortalType;
 import com.minecarts.portalforge.helper.clearPortalingState;
 
@@ -32,41 +33,34 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
             Entity entity = e.getEntity();
             if(plugin.entityPortaling.contains(entity)) return; //If they're already portaling, skip em.
             plugin.entityPortaling.add(entity);
-
             Location blockLocation = e.getLocation().getBlock().getLocation(); //maybe just e.getLocation()?
             Portal portal = plugin.dbHelper.getPortalFromBlockLocation(blockLocation);
-                if(portal!= null && portal.endPoint != null){
+                if(portal == null){
+                    plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(plugin,entity),200); //clear 10 seconds later
+                    plugin.log(MessageFormat.format("{0} tried using a portal not in the DB at: {1}",entity,entity.getLocation()));
+                    return;
+                }
+                
+                if(entity instanceof Player){
+                    String dest = "[No Destination]";
+                    if(portal.endPoint != null){
+                       dest = MessageFormat.format("({0},{1},{2})", portal.endPoint.getX(),portal.endPoint.getY(),portal.endPoint.getZ());
+                    }
+                    plugin.logDebug((Player)entity, MessageFormat.format("TOUCHED: [{0}] #{1} [{2}] {3}", 
+                            portal.type.name(),
+                            portal.id,
+                            portal.activation,
+                            dest));
+                }
+
+                if(portal.activation == PortalActivation.INSTANT){
                     //Portal should be a success!
                     Bukkit.getServer().getPluginManager().callEvent(new PortalSuccessEvent(entity,portal));
+                } else if(portal.activation == PortalActivation.DELAYED) {
+                    //And clear their state 5 seconds later, they should have portaled by then?
+                    plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(plugin,entity),20 * 5);
                 } else {
-                    if(entity instanceof Player){
-                        Player player = (Player)entity;
-                        String data = "";
-                        if(portal == null){
-                            data = "(Not in DB)";
-                        } else if(portal.id != -1){
-                            data = MessageFormat.format("(#{0})", portal.id);
-                        } else {
-                            data = "(No id but in DB?)";
-                        }
-
-                        //It was probably a nether portal that somehow ended up in the DB without being created
-                        // should we start tracking this portal somehow?
-                        if(portal == null || portal.type == null || portal.type == PortalType.NETHER){
-                            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(plugin,entity),200); //clear 10 seconds later
-                            plugin.log(MessageFormat.format("{0} touched portal: {1}",player.getName(),data));
-                            return;
-                        } else {
-                            plugin.log(MessageFormat.format("{0} tried to use unlinked portal: {1}",player.getName(),data));
-                            if(!player.isOp()){ data = ""; }
-                            player.sendMessage(MessageFormat.format("This portal{0} is not linked anywhere.", data));
-                            
-                            //And clear their state 2 seconds later
-                            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(plugin,entity),40);
-                            return;
-                        }
-                    }
-                   
+                    plugin.log("Unknown portal activation method for portal " + portal.id + ": " + portal.activation.name());
                 }
         } catch (Exception x){
             x.printStackTrace();

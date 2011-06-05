@@ -2,6 +2,7 @@ package com.minecarts.portalforge.listener;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.block.BlockFace;
 import org.bukkit.event.block.Action;
 import org.bukkit.Location;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -9,6 +10,8 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 
 import com.minecarts.portalforge.PortalForge;
+import com.minecarts.portalforge.event.PortalSuccessEvent;
+import com.minecarts.portalforge.portal.Portal;
 
 public class PlayerListener extends org.bukkit.event.player.PlayerListener{ 
     private PortalForge plugin;
@@ -19,16 +22,32 @@ public class PlayerListener extends org.bukkit.event.player.PlayerListener{
     @Override
     public void onPlayerPortal(PlayerPortalEvent e){
         if(e.isCancelled()) return;
-        //They're portaling to the nether, so, lets cancel the event and port them ourselves
+        //They're portaling, so lets handle it ourselves
         e.setCancelled(true);
-        System.out.println("Player " + e.getPlayer() + " portaled.");
-        if(e.getPlayer().getLocation().getWorld().getName().equalsIgnoreCase("world")){
-            //If they're in the world, send them to the nether
-            e.getPlayer().teleport(Bukkit.getServer().getWorld("world_nether").getSpawnLocation());
-        } else {
-            //Else, they're in the nether, send them to the world
-            e.getPlayer().teleport(Bukkit.getServer().getWorld("world").getSpawnLocation());
+
+        
+        Location blockLocation = e.getPlayer().getLocation().getBlock().getLocation();
+        //Find the nearest portal block they're touching because of rounding issues with getBlock()
+        org.bukkit.block.Block block = blockLocation.getBlock();
+        if(block.getType() != Material.PORTAL){
+            if(block.getRelative(BlockFace.NORTH).getType() == Material.PORTAL)
+                blockLocation = block.getRelative(BlockFace.NORTH).getLocation(); 
+            else if(block.getRelative(BlockFace.EAST).getType() == Material.PORTAL)
+                blockLocation = block.getRelative(BlockFace.EAST).getLocation();
+            else if(block.getRelative(BlockFace.SOUTH).getType() == Material.PORTAL)
+                blockLocation = block.getRelative(BlockFace.SOUTH).getLocation();
+            else if(block.getRelative(BlockFace.WEST).getType() == Material.PORTAL)
+                blockLocation = block.getRelative(BlockFace.WEST).getLocation();
         }
+            
+        Portal portal = plugin.dbHelper.getPortalFromBlockLocation(blockLocation);
+        if(portal != null){
+            Bukkit.getServer().getPluginManager().callEvent(new PortalSuccessEvent(e.getPlayer(),portal)); //Portal should be a success!
+        } else { 
+            //This portal is unknown.
+            plugin.log("onPlayerPortal to an unknown portal: " + blockLocation);
+        }
+
     }
     
     @Override
