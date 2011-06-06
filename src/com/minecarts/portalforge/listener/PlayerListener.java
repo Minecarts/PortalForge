@@ -42,7 +42,7 @@ public class PlayerListener extends org.bukkit.event.player.PlayerListener{
             
         Portal portal = plugin.dbHelper.getPortalFromBlockLocation(blockLocation);
         if(portal != null){
-            Bukkit.getServer().getPluginManager().callEvent(new PortalSuccessEvent(e.getPlayer(),portal)); //Portal should be a success!
+            plugin.finalizeAndFireEvent(e.getPlayer(), portal);
         } else { 
             //This portal is unknown.
             plugin.log("onPlayerPortal to an unknown portal: " + blockLocation);

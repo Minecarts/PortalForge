@@ -55,7 +55,7 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
 
                 if(portal.activation == PortalActivation.INSTANT){
                     //Portal should be a success!
-                    Bukkit.getServer().getPluginManager().callEvent(new PortalSuccessEvent(entity,portal));
+                    plugin.finalizeAndFireEvent(entity, portal);
                 } else if(portal.activation == PortalActivation.DELAYED) {
                     //And clear their state 5 seconds later, they should have portaled by then?
                     plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(plugin,entity),20 * 5);
