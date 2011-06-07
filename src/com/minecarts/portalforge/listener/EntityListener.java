@@ -40,7 +40,6 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
                     plugin.log(MessageFormat.format("{0} tried using a portal not in the DB at: {1}",entity,entity.getLocation()));
                     return;
                 }
-                
                 if(entity instanceof Player){
                     String dest = "[No Destination]";
                     if(portal.endPoint != null){
@@ -52,16 +51,15 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
                             portal.activation,
                             dest));
                 }
-
                 if(portal.activation == PortalActivation.INSTANT){
-                    //Portal should be a success!
-                    plugin.finalizeAndFireEvent(entity, portal);
+                    plugin.finalizeAndFireEvent(entity, portal); //Portal should be a success!
                 } else if(portal.activation == PortalActivation.DELAYED) {
-                    //And clear their state 5 seconds later, they should have portaled by then?
-                    plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(plugin,entity),20 * 5);
+                    //Do nothing, becuase this will be handled in the PlayerListener event, but we still want to clear portaling state here
                 } else {
                     plugin.log("Unknown portal activation method for portal " + portal.id + ": " + portal.activation.name());
                 }
+                //Clear the portaling state after 5 seconds so they can use instant portals again
+                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(plugin,entity),20 * 5);
         } catch (Exception x){
             x.printStackTrace();
         }
