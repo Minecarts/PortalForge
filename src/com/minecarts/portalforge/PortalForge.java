@@ -102,8 +102,10 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         Portal portal = p.clone(); //Clone so we don't modify a cached portal
         if(portal.type == PortalType.GENERIC){
             if(portal.endPoint == null){ //Verify there is an endpoint for this generic
-                ((Player)entity).sendMessage("Portal is not linked. Portaling aborted.");
-                log("Portal " + portal.id + " is not linked. Aborted portal for " + entity);
+                if(entity instanceof Player){
+                    ((Player)entity).sendMessage("Portal is not linked. Portaling aborted.");
+                }
+                log("Portal " + portal.id + " is not linked. Aborted portal for " + entity + " at " + portal.endPoint);
                 return;
             }
         } else if (portal.type == PortalType.HOME){
