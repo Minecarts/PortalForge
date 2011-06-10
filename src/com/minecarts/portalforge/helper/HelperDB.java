@@ -54,7 +54,7 @@ public class HelperDB {
     public void addBlockToField(Location location, int fieldId){
         try{
             Connection conn = this.getConnection();
-            PreparedStatement ps = conn.prepareStatement("INSERT INTO portal_blocks(portal_id,world,x,y,z) VALUES (?,?,?,?,?)");
+            PreparedStatement ps = conn.prepareStatement("INSERT IGNORE INTO portal_blocks(portal_id,world,x,y,z) VALUES (?,?,?,?,?)");
             if(ps == null){ //Query failed
                 conn.close();
                 plugin.log.warning("Insert Portal block query failed");
