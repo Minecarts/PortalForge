@@ -61,9 +61,13 @@ public class teleportLater implements Runnable{
 
             plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(plugin,e),40);
             
-            //Load the chunk
+            //Check if the chunk is loaded
             if (!portal.endPoint.getWorld().isChunkLoaded(portal.endPoint.getBlockX() >> 4, portal.endPoint.getBlockZ() >> 4)) {
-                portal.endPoint.getWorld().loadChunk(portal.endPoint.getBlockX() >> 4, portal.endPoint.getBlockZ() >> 4);
+                if(e instanceof Player){
+                    portal.endPoint.getWorld().loadChunk(portal.endPoint.getBlockX() >> 4, portal.endPoint.getBlockZ() >> 4);
+                } else { //Don't teleport non player entities to unloaded chunks
+                    e.remove();
+                }
             }
             
             e.teleport(portal.endPoint);
