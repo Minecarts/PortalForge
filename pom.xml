@@ -1,11 +1,24 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.minecarts</groupId>
-  <version>0.0.1-SNAPSHOT</version>
-  <artifactId>template-plugin</artifactId>
-  <name>TemplatePlugin</name>
+  <version>1.0.7</version>
+  <artifactId>PortalForge</artifactId>
+  <name>PortalForge</name>
   <url>http://www.minecarts.com</url>
+  <repositories>
+    <repository>
+      <id>nexus</id>
+      <url>http://artifactory.jazer.com/nexus/content/repositories/releases/</url>
+    </repository>
+  </repositories>
   <build>
+      <resources>
+          <resource>
+              <directory>resources</directory>
+              <filtering>true</filtering>
+          </resource>
+      </resources>
+      <sourceDirectory>${basedir}/src</sourceDirectory>
       <plugins>
           <plugin>	
               <groupId>org.apache.maven.plugins</groupId>
@@ -26,5 +39,19 @@
       <type>jar</type>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>com.minecarts</groupId>
+      <artifactId>DBConnector</artifactId>
+      <version>1.0.2</version>
+      <type>jar</type>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
+  <distributionManagement>
+    <repository>
+      <id>nexus</id>
+      <name>Nexus Repo</name>
+      <url>http://artifactory.jazer.com/nexus/content/repositories/releases/</url>
+    </repository>
+  </distributionManagement>
 </project>

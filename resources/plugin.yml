@@ -1,6 +1,6 @@
 name: PortalForge
 main: com.minecarts.portalforge.PortalForge
-version: 1.0.6
+version: ${pom.version}
 website: http://minecarts.com
 author: Verrier
 depend: [DBConnector]
