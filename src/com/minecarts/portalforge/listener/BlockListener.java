@@ -3,6 +3,8 @@ package com.minecarts.portalforge.listener;
 import java.text.MessageFormat;
 
 import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import com.minecarts.portalforge.PortalForge;
@@ -44,19 +46,32 @@ public class BlockListener extends org.bukkit.event.block.BlockListener{
     public void onBlockBreak(BlockBreakEvent e){
         //THIS WILL NOT WORK (YET) BECAUSE SUPERPICK DOES NOT THROW A BREAK EVENT
         if(e.isCancelled()) return;
-        if(e.getBlock().getType() == Material.PORTAL){
-            e.setCancelled(true);
-            /*
-            //Try and remove it from a field (although it may not have one)
-            if(plugin.dbHelper.removeBlockFromUnknownField(e.getBlock().getLocation())){
-                e.getPlayer().sendMessage("Block removed from portal");
-                plugin.log(MessageFormat.format("{0} removed portal block ({1},{2},{3})",
-                        e.getPlayer().getName(),
-                        e.getBlock().getX(),
-                        e.getBlock().getY(),
-                        e.getBlock().getZ()));
-            }
-            */
+        Block b = e.getBlock();
+        if(b.getType() == Material.OBSIDIAN){
+            World world = b.getWorld();
+            int x = b.getX();
+            int y = b.getY();
+            int z = b.getZ();
+
+            //Try to locate nearby portal blocks and remove them
+            removeNearbyPortalBlocks(world,x + 1,y,z);
+            removeNearbyPortalBlocks(world,x,y + 1,z);
+            removeNearbyPortalBlocks(world,x,y,z + 1);
+            removeNearbyPortalBlocks(world,x - 1,y,z);
+            removeNearbyPortalBlocks(world,x,y - 1,z);
+            removeNearbyPortalBlocks(world,x,y,z - 1);
+        }
+    }
+
+    private void removeNearbyPortalBlocks(World world, int x, int y, int z){
+        if(world.getBlockAt(x,y,z).getType() == Material.PORTAL){
+            world.getBlockAt(x,y,z).setType(Material.AIR);
+            removeNearbyPortalBlocks(world,x + 1,y,z);
+            removeNearbyPortalBlocks(world,x,y + 1,z);
+            removeNearbyPortalBlocks(world,x,y,z + 1);
+            removeNearbyPortalBlocks(world,x - 1,y,z);
+            removeNearbyPortalBlocks(world,x,y - 1,z);
+            removeNearbyPortalBlocks(world,x,y,z - 1);
         }
     }
 }
