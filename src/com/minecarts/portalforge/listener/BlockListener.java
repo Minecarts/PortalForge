@@ -6,6 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import com.minecarts.portalforge.PortalForge;
 import com.minecarts.portalforge.portal.NetherPortal;
@@ -41,7 +42,16 @@ public class BlockListener extends org.bukkit.event.block.BlockListener{
             }
         }
     }
-    
+
+    @Override
+    public void onBlockPhysics(BlockPhysicsEvent e){
+        if(e.isCancelled()) return;
+        if(e.getBlock().getType() == Material.PORTAL){
+            e.setCancelled(true);
+        }
+    }
+
+
     @Override
     public void onBlockBreak(BlockBreakEvent e){
         //THIS WILL NOT WORK (YET) BECAUSE SUPERPICK DOES NOT THROW A BREAK EVENT
