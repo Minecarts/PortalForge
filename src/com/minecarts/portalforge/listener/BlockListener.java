@@ -2,6 +2,8 @@ package com.minecarts.portalforge.listener;
 
 import java.text.MessageFormat;
 
+import com.minecarts.portalforge.portal.Portal;
+import com.minecarts.portalforge.portal.PortalType;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -54,7 +56,6 @@ public class BlockListener extends org.bukkit.event.block.BlockListener{
 
     @Override
     public void onBlockBreak(BlockBreakEvent e){
-        //THIS WILL NOT WORK (YET) BECAUSE SUPERPICK DOES NOT THROW A BREAK EVENT
         if(e.isCancelled()) return;
         Block b = e.getBlock();
         if(b.getType() == Material.OBSIDIAN){
@@ -74,14 +75,20 @@ public class BlockListener extends org.bukkit.event.block.BlockListener{
     }
 
     private void removeNearbyPortalBlocks(World world, int x, int y, int z){
-        if(world.getBlockAt(x,y,z).getType() == Material.PORTAL){
-            world.getBlockAt(x,y,z).setType(Material.AIR);
-            removeNearbyPortalBlocks(world,x + 1,y,z);
-            removeNearbyPortalBlocks(world,x,y + 1,z);
-            removeNearbyPortalBlocks(world,x,y,z + 1);
-            removeNearbyPortalBlocks(world,x - 1,y,z);
-            removeNearbyPortalBlocks(world,x,y - 1,z);
-            removeNearbyPortalBlocks(world,x,y,z - 1);
+        Block b = world.getBlockAt(x,y,z);
+        if(b.getType() == Material.PORTAL){
+            Portal p = plugin.dbHelper.getPortalFromBlockLocation(b.getLocation());
+            if(p.type == PortalType.NETHER){
+                b.setType(Material.AIR);
+                plugin.dbHelper.removeBlockFromUnknownField(b.getLocation());
+
+                removeNearbyPortalBlocks(world,x + 1,y,z);
+                removeNearbyPortalBlocks(world,x,y + 1,z);
+                removeNearbyPortalBlocks(world,x,y,z + 1);
+                removeNearbyPortalBlocks(world,x - 1,y,z);
+                removeNearbyPortalBlocks(world,x,y - 1,z);
+                removeNearbyPortalBlocks(world,x,y,z - 1);
+            }
         }
     }
 }
