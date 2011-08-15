@@ -58,7 +58,8 @@ public class BlockListener extends org.bukkit.event.block.BlockListener{
     @Override
     public void onBlockFromTo(BlockFromToEvent e){
         if(e.isCancelled()) return;
-        if(e.getToBlock().getType() == Material.PORTAL && e.getBlock().getType() == Material.WATER){
+        Material sourceBlockType = e.getBlock().getType();
+        if(e.getToBlock().getType() == Material.PORTAL && (sourceBlockType == Material.STATIONARY_WATER || sourceBlockType == Material.WATER)){
             e.setCancelled(true);
         }
     }
