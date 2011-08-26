@@ -2,7 +2,9 @@ package com.minecarts.portalforge.listener;
 
 import java.text.MessageFormat;
 
+import com.minecarts.portalforge.portal.NetherPortal;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Monster;
 import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -10,6 +12,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Entity;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 import com.minecarts.portalforge.event.*;
@@ -31,6 +34,13 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
         //Fetch the portalId
         try{
             Entity entity = e.getEntity();
+
+            //Don't let items or monsters portal, just destory them
+            if(entity instanceof ItemStack || entity instanceof Monster){
+                entity.remove();
+                return;
+            }
+
             if(plugin.entityPortaling.contains(entity)) return; //If they're already portaling, skip em.
             plugin.entityPortaling.add(entity);
             Location blockLocation = e.getLocation().getBlock().getLocation(); //maybe just e.getLocation()?
