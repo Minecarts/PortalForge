@@ -34,7 +34,6 @@ public class PortalListener extends CustomEventListener{
             Entity entity = e.getEntity();
             
             if(e.isCancelled()) return;
-
             //Do the actual teleport next tick, we really dont HAVE to do this, but... it's safest?
             plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new teleportLater(plugin,entity,portal));
 

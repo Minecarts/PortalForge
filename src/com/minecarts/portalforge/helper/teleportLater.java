@@ -2,6 +2,7 @@ package com.minecarts.portalforge.helper;
 
 import java.text.MessageFormat;
 
+import com.minecarts.portalforge.portal.PortalFlag;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
@@ -69,7 +70,14 @@ public class teleportLater implements Runnable{
                     e.remove();
                 }
             }
-            
+
+        //Handle the flags
+            if(portal.flags.contains(PortalFlag.CLEAR_INVENTORY)){
+                if(e instanceof Player){
+                    ((Player) e).getInventory().clear();
+                }
+            }
+
             e.teleport(portal.endPoint);
             e.setVelocity(e.getLocation().getDirection().normalize().multiply(portal.exitVelocity));
         } else {

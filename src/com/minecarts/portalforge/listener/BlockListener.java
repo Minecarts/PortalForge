@@ -28,7 +28,7 @@ public class BlockListener extends org.bukkit.event.block.BlockListener{
                 int fieldId = plugin.activePortalDesigns.get(e.getPlayer().getName());
                 plugin.dbHelper.addBlockToField(e.getBlockPlaced().getLocation(), fieldId);
                 e.getPlayer().sendMessage("Added block to field: " + fieldId);
-                plugin.log(e.getPlayer().getName() + "Added block to field: " + fieldId);
+                plugin.log(e.getPlayer().getName() + " added block to field: " + fieldId);
             } else {
                 //Player ignited a portal?, which is weird because they didn't place a block!
                 if(e.getPlayer().getItemInHand().getType() == Material.FLINT_AND_STEEL){

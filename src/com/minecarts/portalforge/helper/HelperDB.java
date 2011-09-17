@@ -216,6 +216,7 @@ public class HelperDB {
                 portal.id = set.getInt("id");
                 portal.type = PortalType.valueOf(set.getString("type"));
                 portal.activation = PortalActivation.valueOf(set.getString("activation"));
+                portal.parseFlags(set.getString("flags"));
                 if(set.getString("dest_world")!= null && Bukkit.getServer().getWorld(set.getString("dest_world")) != null){
                     portal.endPoint = new Location(Bukkit.getServer().getWorld(set.getString("dest_world")),set.getDouble("dest_x"),set.getDouble("dest_y"),set.getDouble("dest_z"),set.getFloat("dest_yaw"),set.getFloat("dest_pitch"));
                     portal.exitVelocity = set.getFloat("dest_vel");
