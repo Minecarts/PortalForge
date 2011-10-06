@@ -99,7 +99,17 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
             p.sendMessage(ChatColor.GRAY + msg);
         }
     }
-    
+
+    //Ideally we would store a list of worlds in the database
+    //  would be nice to have some metadata about which is the default spawn
+    //  which nether goes to which world.. or if nether disabled entirely, etc..
+    //
+    //  But until then, this enum is all we need
+    private enum MinecartWorlds{
+        world,
+        world_19
+    }
+
     public void finalizeAndFireEvent(Entity entity, Portal p){
         Portal portal = p.clone(); //Clone so we don't modify a cached portal
         if(portal.type == PortalType.GENERIC){
@@ -119,29 +129,48 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                 return;
             }
             Player player = (Player) entity;
-            if(player.getLocation().getWorld().getName().equalsIgnoreCase("world_nether")){
-                //If they're in the nether, send them back to where they entered from
-                if(portal.endPoint == null){
-                    if(portalListener.entryPortalTracker.containsKey(player.getName())){
-                        portal.endPoint = portalListener.entryPortalTracker.remove(player.getName());
-                        Location newLoc = findSafeExit(portal.endPoint); //Try to find a safe location near this portal
-                        if(newLoc != null){
-                            newLoc.setX(newLoc.getX() + 0.5);
-                            newLoc.setY(newLoc.getY() + 1);
-                            newLoc.setZ(newLoc.getZ() + 0.5);
-                            portal.endPoint = newLoc;
+
+            //Teleport the player to the correct nether based upon the world they're using a nether portal in
+            switch(MinecartWorlds.valueOf(player.getLocation().getWorld().getName().toLowerCase())){
+                case world:
+                    //They're in the old world, so send them to the old nether
+                    //Keep track of where they entered from for return portal usage
+                    portalListener.entryPortalTracker.put(player.getName(),entity.getLocation());
+                    if(portal.endPoint == null){
+                        portal.endPoint = Bukkit.getServer().getWorld("world_nether").getSpawnLocation();
+                    }
+                    break;
+                case world_19:
+                    //They're in the new world, so send them to the new nether
+                    portalListener.entryPortalTracker.put(player.getName(),entity.getLocation());
+                    if(portal.endPoint == null){
+                        portal.endPoint = Bukkit.getServer().getWorld("nether_19").getSpawnLocation();
+                    }
+                    break;
+                default:
+                    //They must be in a nether or non standard world, so send them back
+                    //  to the portal they entered from (this may cause issues for non standard worlds)
+                    //  If they don't have an entry portal (happens on /reload), send them back to world
+                    if(portal.endPoint == null){
+                        if(portalListener.entryPortalTracker.containsKey(player.getName())){
+                            portal.endPoint = portalListener.entryPortalTracker.remove(player.getName());
+                            Location newLoc = findSafeExit(portal.endPoint); //Try to find a safe location near this portal
+                            if(newLoc != null){
+                                newLoc.setX(newLoc.getX() + 0.5);
+                                newLoc.setY(newLoc.getY() + 1);
+                                newLoc.setZ(newLoc.getZ() + 0.5);
+                                portal.endPoint = newLoc;
+                            }
+                        } else {
+                            //Send them to the spawn since we don't know where they entered
+                            portal.endPoint = Bukkit.getServer().getWorld("world").getSpawnLocation();
                         }
                     } else {
-                        portal.endPoint = Bukkit.getServer().getWorld("world").getSpawnLocation(); //Send them to the spawn
+                        //Send them to the the portal.endPoint... or do we want to log that this nether portal has an endpoint and shouldn't?
+                        //  Probably this should just override the location
                     }
-                }
-            } else {
-                //Else, send them to the spawn point in the nether, but log the portal they used to send them back
-                portalListener.entryPortalTracker.put(player.getName(),entity.getLocation()); 
-                if(portal.endPoint == null){
-                    portal.endPoint = Bukkit.getServer().getWorld("world_nether").getSpawnLocation();
-                }
-            }
+                    break;
+            } //switch whatWorldPlayerIsIn
         } else if (portal.type == PortalType.SKYLAND){
             if(portal.endPoint == null){
                 portal.endPoint = Bukkit.getServer().getWorld("world_skyland").getSpawnLocation();
