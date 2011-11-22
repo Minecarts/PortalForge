@@ -35,13 +35,18 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
         try{
             Entity entity = e.getEntity();
 
-            //Don't let items or monsters portal, just destory them
+            //Don't let items or monsters portal, just destory them -- to prevent event spam
             if(entity instanceof ItemStack || entity instanceof Monster){
                 entity.remove();
                 return;
             }
 
             if(plugin.entityPortaling.contains(entity)) return; //If they're already portaling, skip em.
+            if(!(entity instanceof Player)){
+                plugin.log("Entity of type" + entity.getClass() + "tried portaling at " + entity.getLocation() +", ignored (add an exception for this class)");
+                return;
+            }
+
             plugin.entityPortaling.add(entity);
             Location blockLocation = e.getLocation().getBlock().getLocation(); //maybe just e.getLocation()?
             Portal portal = plugin.dbHelper.getPortalFromBlockLocation(blockLocation);
@@ -62,7 +67,7 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
                             dest));
                 }
                 if(portal.activation == PortalActivation.INSTANT){
-                    plugin.finalizeAndFireEvent(entity, portal); //Portal should be a success!
+                    plugin.finalizeAndFireEvent((Player)entity, portal); //Portal should be a success! --- only teleport players
                 } else if(portal.activation == PortalActivation.DELAYED) {
                     //Do nothing, becuase this will be handled in the PlayerListener event, but we still want to clear portaling state here
                 } else {

@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 
 import com.minecarts.portalforge.portal.Portal;
 import com.minecarts.portalforge.PortalForge;
+import org.bukkit.util.Vector;
 
 public class teleportLater implements Runnable{
     private Entity e;
@@ -25,7 +26,7 @@ public class teleportLater implements Runnable{
     public void run() {
         if(e instanceof Player){
             Player p = (Player) e;
-            plugin.logDebug(p,MessageFormat.format("USED: Portal #{0} ({1}): Source: ({2,number,#.##}, {3,number,#.##}, {4,number,#.##}) to Dest: ({5,number,#.##}, {6,number,#.##}, {7,number,#.##}) [P: {8}, Y: {9}, V: {10}]",
+            plugin.logDebug(p,MessageFormat.format("USED: Portal #{0} ({1}): Source: ({2,number,#.##}, {3,number,#.##}, {4,number,#.##}) to Dest: ({5,number,#.##}, {6,number,#.##}, {7,number,#.##}) [P: {8}, Y: {9}]",
                         portal.id,
                         portal.type,
                         e.getLocation().getX(),
@@ -35,8 +36,7 @@ public class teleportLater implements Runnable{
                         portal.endPoint.getY(),
                         portal.endPoint.getZ(),
                         portal.endPoint.getPitch(),
-                        portal.endPoint.getYaw(),
-                        portal.exitVelocity
+                        portal.endPoint.getYaw()
                         ));
         }
         //Check to see if the end point is blocked (@TODO: this check should be improved)
@@ -56,7 +56,6 @@ public class teleportLater implements Runnable{
                     portal.endPoint.getZ(),
                     portal.endPoint.getPitch(),
                     portal.endPoint.getYaw(),
-                    portal.exitVelocity,
                     entityName
                     ));
 
@@ -77,9 +76,15 @@ public class teleportLater implements Runnable{
                     ((Player) e).getInventory().clear();
                 }
             }
-
             e.teleport(portal.endPoint);
-            e.setVelocity(e.getLocation().getDirection().normalize().multiply(portal.exitVelocity));
+            e.setVelocity(portal.velocityVector);
+
+            if(portal.flags.contains(PortalFlag.MESSAGE) && portal.message != null && portal.message.length() > 0){
+                if(e instanceof Player){
+                    ((Player) e).sendMessage(portal.message);
+                }
+            }
+
         } else {
             //It was blocked, display a message?
             if(e instanceof Player){

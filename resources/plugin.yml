@@ -14,10 +14,10 @@ permissions:
     portalforge.*:
         description: "Gives access to all PortalForge functionality"
         children:
-            portalforge.ignite: true;
-            portalforge.use: true;
-            portalforge.debug: true;
-            portalforge.admin: true;
+            portalforge.ignite: true
+            portalforge.use: true
+            portalforge.debug: true
+            portalforge.admin: true
     portalforge.ignite:
             description: "Allows igniting of portals"
             default: true

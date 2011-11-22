@@ -4,5 +4,6 @@ public enum PortalType {
     NETHER,
     HOME,
     GENERIC,
-    SKYLAND
+    SKYLAND,
+    END
 }

@@ -4,12 +4,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
-import java.text.MessageFormat;
 
 import java.util.ArrayList;
 
 import com.minecarts.portalforge.PortalForge;
 import com.minecarts.portalforge.portal.Portal;
+import com.minecarts.portalforge.portal.PortalFlag;
 import com.minecarts.portalforge.portal.PortalType;
 import com.minecarts.portalforge.portal.PortalActivation;
 
@@ -17,6 +17,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.Location;
+import org.bukkit.util.Vector;
 
 public class HelperDB {
     private PortalForge plugin; 
@@ -217,9 +218,10 @@ public class HelperDB {
                 portal.type = PortalType.valueOf(set.getString("type"));
                 portal.activation = PortalActivation.valueOf(set.getString("activation"));
                 portal.parseFlags(set.getString("flags"));
+                portal.message = set.getString("message");
                 if(set.getString("dest_world")!= null && Bukkit.getServer().getWorld(set.getString("dest_world")) != null){
                     portal.endPoint = new Location(Bukkit.getServer().getWorld(set.getString("dest_world")),set.getDouble("dest_x"),set.getDouble("dest_y"),set.getDouble("dest_z"),set.getFloat("dest_yaw"),set.getFloat("dest_pitch"));
-                    portal.exitVelocity = set.getFloat("dest_vel");
+                    portal.velocityVector = new Vector(set.getFloat("dest_vel_x"),set.getFloat("dest_vel_y"),set.getFloat("dest_vel_z"));
                 }
                 set.close();
             }
@@ -249,9 +251,11 @@ public class HelperDB {
                 portal.id = set.getInt("id");
                 portal.type = PortalType.valueOf(set.getString("type"));
                 portal.activation = PortalActivation.valueOf(set.getString("activation"));
+                portal.parseFlags(set.getString("flags"));
+                portal.message = set.getString("message");
                 if(set.getString("dest_world")!= null && Bukkit.getServer().getWorld(set.getString("dest_world")) != null){
                     portal.endPoint = new Location(Bukkit.getServer().getWorld(set.getString("dest_world")),set.getDouble("dest_x"),set.getDouble("dest_y"),set.getDouble("dest_z"),set.getFloat("dest_yaw"),set.getFloat("dest_pitch"));
-                    portal.exitVelocity = set.getFloat("dest_vel");
+                    portal.velocityVector = new Vector(set.getFloat("dest_vel_x"),set.getFloat("dest_vel_y"),set.getFloat("dest_vel_z"));
                 }
                 set.close();
             }
@@ -262,7 +266,7 @@ public class HelperDB {
         }
         return portal;
     }
-    
+
     private Connection getConnection(){
         return plugin.dbc.getConnection("minecarts");
     }

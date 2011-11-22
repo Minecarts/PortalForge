@@ -1,12 +1,11 @@
 package com.minecarts.portalforge;
 
-import java.text.MessageFormat;
 import java.util.logging.Logger;
 
+import com.minecarts.portalforge.portal.PortalFlag;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.Server;
 import org.bukkit.Location;
 import org.bukkit.World.Environment;
 import org.bukkit.plugin.PluginManager;
@@ -74,11 +73,6 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         //Register commands
         getCommand("portal").setExecutor(new PortalCommand(this));
         
-        //Try and create our skylands
-        if(getServer().getWorld("world_skyland") == null){
-            getServer().createWorld("world_skyland", Environment.SKYLANDS,"gargamel".hashCode());
-        }
-
         log.info("[" + pdf.getName() + "] version " + pdf.getVersion() + " enabled.");
     }
     
@@ -110,41 +104,49 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         world_19
     }
 
-    public void finalizeAndFireEvent(Entity entity, Portal p){
+    public void finalizeAndFireEvent(Player player, Portal p){
         Portal portal = p.clone(); //Clone so we don't modify a cached portal
+
+        //Check any portal use requirements
+        if(portal.flags.contains(PortalFlag.REQUIRE_EMPTY_INVENTORY)){
+            for(ItemStack stack : player.getInventory().getContents()){
+                if(stack != null && stack.getTypeId() != 0){
+                    player.sendMessage("Your inventory must be empty to use this portal.");
+                    return;
+                }
+            }
+        }
+        if(portal.flags.contains(PortalFlag.SUBSCRIBER)){
+            if(!player.hasPermission("subscriber")){
+                player.sendMessage("Only subscribers can use this portal. Please visit " + ChatColor.GOLD + "minecarts.com" + ChatColor.WHITE + " for more info.");
+            }
+        }
+
         if(portal.type == PortalType.GENERIC){
             if(portal.endPoint == null){ //Verify there is an endpoint for this generic
-                if(entity instanceof Player){
-                    ((Player)entity).sendMessage("Portal is not linked. Portaling aborted.");
-                }
-                log("Portal " + portal.id + " is not linked. Aborted portal for " + entity + " at " + portal.endPoint);
+                player.sendMessage("Portal is not linked. Portaling aborted.");
+                log("Portal " + portal.id + " is not linked. Aborted portal for " + player.getName() + " at " + portal.endPoint);
                 return;
             }
         } else if (portal.type == PortalType.HOME){
-            ((Player)entity).sendMessage("Home portals are not currently implemented. Sorry!");
+            player.sendMessage("Home portals are not currently implemented. Sorry!");
             return;
         } else if (portal.type == PortalType.NETHER){
-            if(!(entity instanceof Player)){ //Only players can portal to the nether
-                log("A non player entity tried portaling to the nether @ " + portal.endPoint);
-                return;
-            }
-            Player player = (Player) entity;
-
             //Teleport the player to the correct nether based upon the world they're using a nether portal in
             switch(MinecartWorlds.valueOf(player.getLocation().getWorld().getName().toLowerCase())){
                 case world:
                     //They're in the old world, so send them to the old nether
                     //Keep track of where they entered from for return portal usage
-                    portalListener.entryPortalTracker.put(player.getName(),entity.getLocation());
+                    portalListener.entryPortalTracker.put(player.getName(),player.getLocation());
                     if(portal.endPoint == null){
                         portal.endPoint = Bukkit.getServer().getWorld("world_nether").getSpawnLocation();
                     }
                     break;
                 case world_19:
                     //They're in the new world, so send them to the new nether
-                    portalListener.entryPortalTracker.put(player.getName(),entity.getLocation());
+                    portalListener.entryPortalTracker.put(player.getName(),player.getLocation());
                     if(portal.endPoint == null){
-                        portal.endPoint = Bukkit.getServer().getWorld("nether_19").getSpawnLocation();
+                        portal.endPoint = Bukkit.getServer().getWorld("nether_new").getSpawnLocation();
                     }
                     break;
                 default:
@@ -172,17 +174,17 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                     break;
             } //switch whatWorldPlayerIsIn
         } else if (portal.type == PortalType.SKYLAND){
-            if(portal.endPoint == null){
-                portal.endPoint = Bukkit.getServer().getWorld("world_skyland").getSpawnLocation();
-            }
+            player.sendMessage("The skyland has been removed by Notch. This portal is no longer functional.");
+            return;
+        } else if (portal.type == PortalType.END){
+            player.sendMessage("For now... The End is only accessable via a natural portal.");
+            return;
         } else {
-            if(entity instanceof Player){
                 log("ERROR: " + portal.id +" has unknown portal type: " + portal.type);
-                ((Player)entity).sendMessage("Unknown portal type: " + portal.type);
+                player.sendMessage("Unknown portal type: " + portal.type);
                 return;
-            }
         }
-        Bukkit.getServer().getPluginManager().callEvent(new PortalSuccessEvent(entity,portal));
+        Bukkit.getServer().getPluginManager().callEvent(new PortalSuccessEvent(player,portal));
     }
     
     
