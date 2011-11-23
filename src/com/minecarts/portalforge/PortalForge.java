@@ -125,7 +125,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         if(portal.type == PortalType.GENERIC){
             if(portal.endPoint == null){ //Verify there is an endpoint for this generic
                 player.sendMessage("Portal is not linked. Portaling aborted.");
-                log("Portal " + portal.id + " is not linked. Aborted portal for " + player.getName() + " at " + portal.endPoint);
+                log("Portal " + portal.id + " is not linked. Aborted portal for " + player.getName() + " at " + player.getLocation());
                 return;
             }
         } else if (portal.type == PortalType.HOME){
@@ -180,9 +180,9 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
             player.sendMessage("For now... The End is only accessable via a natural portal.");
             return;
         } else {
-                log("ERROR: " + portal.id +" has unknown portal type: " + portal.type);
-                player.sendMessage("Unknown portal type: " + portal.type);
-                return;
+            log("ERROR: " + portal.id +" has unknown portal type: " + portal.type);
+            player.sendMessage("Unknown portal type: " + portal.type);
+            return;
         }
         Bukkit.getServer().getPluginManager().callEvent(new PortalSuccessEvent(player,portal));
     }
@@ -218,7 +218,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
             if(searchBlock.getType() == Material.AIR && searchBlock.getRelative(BlockFace.UP).getType() == Material.AIR){
                 portalBlock = searchBlock;
                 ++successCount;
-            } else { 
+            } else {
                 //Search the other way!
                 face = faceNegative;
                 portalBlock = portalBlock.getFace(face);
