@@ -101,7 +101,9 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
     //  But until then, this enum is all we need
     private enum MinecartWorlds{
         world,
-        world_19
+        world_19,
+        world_nether,
+        new_nether,
     }
 
     public void finalizeAndFireEvent(Player player, Portal p){
