@@ -45,7 +45,7 @@ public class teleportLater implements Runnable{
             String entityName = (e instanceof Player) ? ((Player)e).getName() : e.toString() +"["+e.getEntityId()+"]";
             //Display to console log
             //[P:{8,number,#.##},Y:{9,number,#.##},V:{10,number,#.##}] 
-            plugin.log(MessageFormat.format("{11} used Portal #{0} ({1}): [{2,number,#.##}, {3,number,#.##}, {4,number,#.##}]->[{5,number,#.##}, {6,number,#.##}, {7,number,#.##}]",
+            plugin.log(MessageFormat.format("{10} used Portal #{0} ({1}): [{2,number,#.##}, {3,number,#.##}, {4,number,#.##}]->[{5,number,#.##}, {6,number,#.##}, {7,number,#.##}]",
                     portal.id,
                     portal.type,
                     e.getLocation().getX(),
