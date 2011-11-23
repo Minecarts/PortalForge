@@ -77,7 +77,9 @@ public class teleportLater implements Runnable{
                 }
             }
             e.teleport(portal.endPoint);
-            e.setVelocity(portal.velocityVector);
+            if(portal.velocityVector != null){
+                e.setVelocity(portal.velocityVector);
+            }
 
             if(portal.flags.contains(PortalFlag.MESSAGE) && portal.message != null && portal.message.length() > 0){
                 if(e instanceof Player){
