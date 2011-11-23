@@ -4,6 +4,7 @@ import java.text.MessageFormat;
 
 import com.minecarts.portalforge.portal.NetherPortal;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Monster;
 import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.bukkit.Bukkit;
@@ -36,7 +37,7 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
             Entity entity = e.getEntity();
 
             //Don't let items or monsters portal, just destory them -- to prevent event spam
-            if(entity instanceof ItemStack || entity instanceof Monster){
+            if(entity instanceof ItemStack || entity instanceof Monster || entity instanceof Item){
                 entity.remove();
                 return;
             }
