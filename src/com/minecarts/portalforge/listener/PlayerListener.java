@@ -3,6 +3,7 @@ package com.minecarts.portalforge.listener;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.Location;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -25,29 +26,27 @@ public class PlayerListener extends org.bukkit.event.player.PlayerListener{
         //They're portaling, so lets handle it ourselves
         e.setCancelled(true);
 
-        
-        Location blockLocation = e.getPlayer().getLocation().getBlock().getLocation();
+        Location blockLocation = e.getFrom().getBlock().getLocation();
         //Find the nearest portal block they're touching because of rounding issues with getBlock()
         org.bukkit.block.Block block = blockLocation.getBlock();
-        if(block.getType() != Material.PORTAL){
-            if(block.getRelative(BlockFace.NORTH).getType() == Material.PORTAL)
+        if(!(block.getType() == Material.PORTAL || block.getType() == Material.ENDER_PORTAL)){
+            if(block.getRelative(BlockFace.NORTH).getType() == Material.PORTAL || block.getRelative(BlockFace.NORTH).getType() == Material.ENDER_PORTAL)
                 blockLocation = block.getRelative(BlockFace.NORTH).getLocation(); 
-            else if(block.getRelative(BlockFace.EAST).getType() == Material.PORTAL)
+            else if(block.getRelative(BlockFace.EAST).getType() == Material.PORTAL || block.getRelative(BlockFace.NORTH).getType() == Material.ENDER_PORTAL)
                 blockLocation = block.getRelative(BlockFace.EAST).getLocation();
-            else if(block.getRelative(BlockFace.SOUTH).getType() == Material.PORTAL)
+            else if(block.getRelative(BlockFace.SOUTH).getType() == Material.PORTAL || block.getRelative(BlockFace.NORTH).getType() == Material.ENDER_PORTAL)
                 blockLocation = block.getRelative(BlockFace.SOUTH).getLocation();
-            else if(block.getRelative(BlockFace.WEST).getType() == Material.PORTAL)
+            else if(block.getRelative(BlockFace.WEST).getType() == Material.PORTAL || block.getRelative(BlockFace.NORTH).getType() == Material.ENDER_PORTAL)
                 blockLocation = block.getRelative(BlockFace.WEST).getLocation();
         }
-            
+
         Portal portal = plugin.dbHelper.getPortalFromBlockLocation(blockLocation);
         if(portal != null){
-            plugin.finalizeAndFireEvent(e.getPlayer(), portal);
-        } else { 
+            plugin.finalizeAndFireEvent((Player)e.getPlayer(), portal);
+        } else {
             //This portal is unknown.
             plugin.log("onPlayerPortal to an unknown portal: " + blockLocation);
         }
-
     }
     
     @Override

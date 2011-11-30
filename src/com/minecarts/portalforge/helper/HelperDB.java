@@ -15,8 +15,10 @@ import com.minecarts.portalforge.portal.PortalActivation;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 public class HelperDB {
@@ -233,7 +235,63 @@ public class HelperDB {
         plugin.cache.setPortal(location, portal);
         return portal;
     }
-    
+
+
+    public void setPortalEntryLocation(Player player){
+        try{
+            Connection conn = this.getConnection();
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO portal_history(player, world, x, y, z) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE world = ?, x = ?, y = ?, z = ?");
+            if(ps == null){ //Query failed
+                conn.close();
+                plugin.log.warning("Insert Portal block query failed");
+                return;
+            }
+
+            ps.setString(1, player.getName());
+            ps.setString(2, player.getWorld().getName());
+            ps.setDouble(3, player.getLocation().getX());
+            ps.setDouble(4, player.getLocation().getY());
+            ps.setDouble(5, player.getLocation().getZ());
+            ps.setString(6, player.getWorld().getName());
+            ps.setDouble(7, player.getLocation().getX());
+            ps.setDouble(8, player.getLocation().getY());
+            ps.setDouble(9, player.getLocation().getZ());
+
+            ps.execute();
+
+            ps.close();
+            conn.close();
+        } catch (SQLException e) {
+           e.printStackTrace();
+        }
+    }
+
+    //TODO
+    public Location getPortalEntryLocation(Player player, World world){
+        Location loc = null;
+        World w = null;
+        try{
+            Connection conn = this.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM `portal_history` WHERE `portal_history`.`player` = ? AND `portal_history`.`world`= ? LIMIT 1");
+            ps.setString(1,player.getName());
+            ps.setString(2,world.getName());
+            ResultSet set = ps.executeQuery();
+            if (set.next()) {
+                w = Bukkit.getServer().getWorld(set.getString("world"));
+                loc = new Location(w,set.getDouble("x"),set.getDouble("y"),set.getDouble("z"));
+                set.close();
+            }
+            ps.close();
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        if(loc == null){
+            loc = world.getSpawnLocation();
+        }
+        return loc;
+    }
+
     public Portal getPortalById(int portalId){
         Portal portal = null;
         try{

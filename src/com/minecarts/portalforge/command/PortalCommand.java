@@ -3,6 +3,7 @@ package com.minecarts.portalforge.command;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 
+import com.minecarts.portalforge.helper.clearPortalingState;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -191,6 +192,21 @@ public class PortalCommand extends CommandHandler{
                     }
                 } else {
                     p.sendMessage("/portal use #ID");
+                }
+                return true;
+            }
+
+            if(args[0].equalsIgnoreCase("goto")){
+                if(args.length == 2){
+                    ArrayList<Block> blocks = plugin.dbHelper.getPortalBlocksFromId(Integer.parseInt(args[1]));
+                    if(blocks.size() > 0){
+                        p.sendMessage("Moved to portal " + args[1]);
+                        plugin.entityPortaling.add(p); //Add them to the portaling queue so they don't portal
+                        p.teleport(blocks.get(0).getLocation());
+                        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(plugin,p),20 * 5);
+                    }
+                } else {
+                    p.sendMessage("/portal goto #ID");
                 }
                 return true;
             }

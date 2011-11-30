@@ -36,11 +36,6 @@ public class BlockListener extends org.bukkit.event.block.BlockListener{
                     org.bukkit.block.Block block = e.getBlock();
                     plugin.log(MessageFormat.format("{0} ignited nether portal at ({1},{2},{3})", e.getPlayer().getName(),block.getX(),block.getY(),block.getZ()));
                     plugin.netherPortal.createPortalInDB(block);
-                } else {
-                    if(e.getPlayer().isOp()){
-                        e.getPlayer().sendMessage("You must /portal create (or /portal edit #) before placing portal blocks");
-                    }
-                    e.setCancelled(true);
                 }
             }
         }

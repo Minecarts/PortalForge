@@ -101,7 +101,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
     //  But until then, this enum is all we need
     private enum MinecartWorlds{
         world,
-        world_19,
+        newhighridge,
         world_nether,
         new_nether,
     }
@@ -134,6 +134,9 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
             player.sendMessage("Home portals are not currently implemented. Sorry!");
             return;
         } else if (portal.type == PortalType.NETHER){
+            //Only log nether portal usage for return portals
+            dbHelper.setPortalEntryLocation(player);
+
             //Teleport the player to the correct nether based upon the world they're using a nether portal in
             switch(MinecartWorlds.valueOf(player.getLocation().getWorld().getName().toLowerCase())){
                 case world:
@@ -141,14 +144,16 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                     //Keep track of where they entered from for return portal usage
                     portalListener.entryPortalTracker.put(player.getName(),player.getLocation());
                     if(portal.endPoint == null){
-                        portal.endPoint = Bukkit.getServer().getWorld("world_nether").getSpawnLocation();
+                        //portal.endPoint = Bukkit.getServer().getWorld("world_nether").getSpawnLocation();
+                        portal.endPoint = dbHelper.getPortalEntryLocation(player,getServer().getWorld("world_nether"));
                     }
                     break;
-                case world_19:
+                case newhighridge:
                     //They're in the new world, so send them to the new nether
                     portalListener.entryPortalTracker.put(player.getName(),player.getLocation());
                     if(portal.endPoint == null){
-                        portal.endPoint = Bukkit.getServer().getWorld("nether_new").getSpawnLocation();
+                        //portal.endPoint = Bukkit.getServer().getWorld("nether_new").getSpawnLocation();
+                        portal.endPoint = dbHelper.getPortalEntryLocation(player,getServer().getWorld("nether_new"));
                     }
                     break;
                 default:
@@ -157,7 +162,8 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                     //  If they don't have an entry portal (happens on /reload), send them back to world
                     if(portal.endPoint == null){
                         if(portalListener.entryPortalTracker.containsKey(player.getName())){
-                            portal.endPoint = portalListener.entryPortalTracker.remove(player.getName());
+                            //portal.endPoint = portalListener.entryPortalTracker.remove(player.getName());
+                            portal.endPoint = dbHelper.getPortalEntryLocation(player,player.getLocation().getWorld());
                             Location newLoc = findSafeExit(portal.endPoint); //Try to find a safe location near this portal
                             if(newLoc != null){
                                 newLoc.setX(newLoc.getX() + 0.5);
@@ -167,7 +173,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                             }
                         } else {
                             //Send them to the spawn since we don't know where they entered
-                            portal.endPoint = Bukkit.getServer().getWorld("world").getSpawnLocation();
+                            portal.endPoint = Bukkit.getServer().getWorld("newhighridge").getSpawnLocation();
                         }
                     } else {
                         //Send them to the the portal.endPoint... or do we want to log that this nether portal has an endpoint and shouldn't?
