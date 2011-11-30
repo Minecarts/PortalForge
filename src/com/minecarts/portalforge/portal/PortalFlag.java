@@ -5,4 +5,6 @@ public enum PortalFlag {
     REQUIRE_EMPTY_INVENTORY,
     MESSAGE,
     SUBSCRIBER,
+    MODE_CREATIVE,
+    MODE_SURVIVAL
 }
