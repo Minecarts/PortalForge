@@ -133,63 +133,25 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         } else if (portal.type == PortalType.NETHER){
             //Only log nether portal usage for return portals
             dbHelper.setPortalEntryLocation(player);
+            String playerWorld = player.getLocation().getWorld().getName();
 
-            //Teleport the player to the correct nether based upon the world they're using a nether portal in
-            switch(MinecartWorlds.valueOf(player.getLocation().getWorld().getName().toLowerCase())){
-                case world:
-                    //They're in the old world, so send them to the old nether
-                    //Keep track of where they entered from for return portal usage
-                    portalListener.entryPortalTracker.put(player.getName(),player.getLocation());
-                    if(portal.endPoint == null){
-                        //portal.endPoint = Bukkit.getServer().getWorld("world_nether").getSpawnLocation();
-                        portal.endPoint = dbHelper.getPortalEntryLocation(player,getServer().getWorld("world_nether"));
-                    }
-                    break;
-                case newhighridge:
-                    //They're in the new world, so send them to the new nether
-                    portalListener.entryPortalTracker.put(player.getName(),player.getLocation());
-                    if(portal.endPoint == null){
-                        //portal.endPoint = Bukkit.getServer().getWorld("nether_new").getSpawnLocation();
-                        portal.endPoint = dbHelper.getPortalEntryLocation(player,getServer().getWorld("nether_new"));
-                    }
-                    break;
-                default:
-                    //They must be in a nether or non standard world, so send them back
-                    //  to the portal they entered from (this may cause issues for non standard worlds)
-                    //  If they don't have an entry portal (happens on /reload), send them back to world
-                    if(portal.endPoint == null){
-                        //if(portalListener.entryPortalTracker.containsKey(player.getName())){
-                            //portal.endPoint = portalListener.entryPortalTracker.remove(player.getName());
+            if(playerWorld.equals("world_nether")){
+                portal.endPoint = dbHelper.getPortalEntryLocation(player,Bukkit.getWorld("world"));
+            } else if(playerWorld.equals("world")){
+                portal.endPoint = dbHelper.getPortalEntryLocation(player,Bukkit.getWorld("world_nether"));
+            } else if(playerWorld.equals("newhighridge")){
+                portal.endPoint = dbHelper.getPortalEntryLocation(player,Bukkit.getWorld("new_nether"));
+            } else if(playerWorld.equals("new_nether")){
+                portal.endPoint = dbHelper.getPortalEntryLocation(player,Bukkit.getWorld("newhighridge"));
+            }
 
-                            String playerWorld = player.getLocation().getWorld().getName();
-
-                            if(playerWorld.equals("world_nether")){
-                                portal.endPoint = dbHelper.getPortalEntryLocation(player,Bukkit.getWorld("world"));
-                            } else if(playerWorld.equals("world")){
-                                portal.endPoint = dbHelper.getPortalEntryLocation(player,Bukkit.getWorld("world_nether"));
-                            } else if(playerWorld.equals("newhighridge")){
-                                portal.endPoint = dbHelper.getPortalEntryLocation(player,Bukkit.getWorld("new_nether"));
-                            } else if(playerWorld.equals("new_nether")){
-                                portal.endPoint = dbHelper.getPortalEntryLocation(player,Bukkit.getWorld("newhighridge"));
-                            }
-
-                            Location newLoc = findSafeExit(portal.endPoint); //Try to find a safe location near this portal
-                            if(newLoc != null){
-                                newLoc.setX(newLoc.getX() + 0.5);
-                                newLoc.setY(newLoc.getY() + 1);
-                                newLoc.setZ(newLoc.getZ() + 0.5);
-                                portal.endPoint = newLoc;
-                            }
-                        //} else {
-                            //Send them to the spawn since we don't know where they entered
-                           
-                        //}
-                    } else {
-                        //Send them to the the portal.endPoint... or do we want to log that this nether portal has an endpoint and shouldn't?
-                        //  Probably this should just override the location
-                    }
-                    break;
-            } //switch whatWorldPlayerIsIn
+            Location newLoc = findSafeExit(portal.endPoint); //Try to find a safe location near this portal
+            if(newLoc != null){
+                newLoc.setX(newLoc.getX() + 0.5);
+                newLoc.setY(newLoc.getY() + 1);
+                newLoc.setZ(newLoc.getZ() + 0.5);
+                portal.endPoint = newLoc;
+            }
         } else if (portal.type == PortalType.SKYLAND){
             player.sendMessage("The skyland has been removed by Notch. This portal is no longer functional.");
             return;
