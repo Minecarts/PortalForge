@@ -91,18 +91,6 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         }
     }
 
-    //Ideally we would store a list of worlds in the database
-    //  would be nice to have some metadata about which is the default spawn
-    //  which nether goes to which world.. or if nether disabled entirely, etc..
-    //
-    //  But until then, this enum is all we need
-    private enum MinecartWorlds{
-        world,
-        newhighridge,
-        world_nether,
-        new_nether,
-    }
-
     public void finalizeAndFireEvent(Player player, Portal p){
         Portal portal = p.clone(); //Clone so we don't modify a cached portal
 
@@ -139,10 +127,10 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                 portal.endPoint = dbHelper.getPortalEntryLocation(player,Bukkit.getWorld("world"));
             } else if(playerWorld.equals("world")){
                 portal.endPoint = dbHelper.getPortalEntryLocation(player,Bukkit.getWorld("world_nether"));
-            } else if(playerWorld.equals("newhighridge")){
+            } else if(playerWorld.equals("new_highridge")){
                 portal.endPoint = dbHelper.getPortalEntryLocation(player,Bukkit.getWorld("new_nether"));
             } else if(playerWorld.equals("new_nether")){
-                portal.endPoint = dbHelper.getPortalEntryLocation(player,Bukkit.getWorld("newhighridge"));
+                portal.endPoint = dbHelper.getPortalEntryLocation(player,Bukkit.getWorld("new_highridge"));
             }
 
             Location newLoc = findSafeExit(portal.endPoint); //Try to find a safe location near this portal
