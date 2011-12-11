@@ -41,7 +41,7 @@ public class teleportLater implements Runnable{
         }
         //Check to see if the end point is blocked (@TODO: this check should be improved)
         Block relativeBlock = portal.endPoint.getWorld().getBlockAt(portal.endPoint).getRelative(BlockFace.UP);
-        if(relativeBlock.getType() == Material.AIR || relativeBlock.getType() == Material.PORTAL){
+        if(relativeBlock.getType() == Material.AIR || relativeBlock.getType() == Material.PORTAL || relativeBlock.getType() == Material.VINE || relativeBlock.getType() == Material.TORCH){
             String entityName = (e instanceof Player) ? ((Player)e).getName() : e.toString() +"["+e.getEntityId()+"]";
             //Display to console log
             //[P:{8,number,#.##},Y:{9,number,#.##},V:{10,number,#.##}] 
@@ -86,7 +86,6 @@ public class teleportLater implements Runnable{
                     ((Player) e).sendMessage(portal.message);
                 }
             }
-
         } else {
             //It was blocked, display a message?
             if(e instanceof Player){
