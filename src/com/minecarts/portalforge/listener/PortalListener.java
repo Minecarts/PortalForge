@@ -25,18 +25,16 @@ public class PortalListener extends CustomEventListener{
     public PortalListener(PortalForge plugin){
         this.plugin = plugin;
     }
-    
+
     @Override
     public void onCustomEvent(Event event){
         if(event.getEventName() == "PortalSuccessEvent"){
             PortalSuccessEvent e = (PortalSuccessEvent) event;
             Portal portal = e.getPortal();
             Entity entity = e.getEntity();
-            
-            if(e.isCancelled()) return;
-            //Do the actual teleport next tick, we really dont HAVE to do this, but... it's safest?
-            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new teleportLater(plugin,entity,portal));
 
+            if(e.isCancelled()) return;
+            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new teleportLater(plugin,entity,portal));
         }
     }
 }

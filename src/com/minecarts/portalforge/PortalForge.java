@@ -91,8 +91,8 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         }
     }
 
-    public void finalizeAndFireEvent(Player player, Portal p){
-        Portal portal = p.clone(); //Clone so we don't modify a cached portal
+    public void finalizeAndFireEvent(Player player, final Portal p){
+        final Portal portal = p.clone(); //Clone so we don't modify a cached portal
 
         //Check any portal use requirements
         if(portal.flags.contains(PortalFlag.REQUIRE_EMPTY_INVENTORY)){
@@ -120,9 +120,10 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
             return;
         } else if (portal.type == PortalType.NETHER){
             //Only log nether portal usage for return portals
-            dbHelper.setPortalEntryLocation(player);
             String playerWorld = player.getLocation().getWorld().getName();
 
+            //We always query the portal endPoint so that we can correctly notify the player
+            //  that they're using a new endpoint and not their normal one
             if(playerWorld.equals("world_nether")){
                 portal.endPoint = dbHelper.getPortalEntryLocation(player,Bukkit.getWorld("world"));
             } else if(playerWorld.equals("world")){
@@ -132,7 +133,29 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
             } else if(playerWorld.equals("new_nether")){
                 portal.endPoint = dbHelper.getPortalEntryLocation(player,Bukkit.getWorld("new_highridge"));
             }
+            
+            if(p.shareDestination != null && portal.endPoint.distance(p.shareDestination) > 5){
+                portal.endPoint = p.shareDestination;
+                player.sendMessage(ChatColor.DARK_GRAY + "You follow the last person to use this nether portal.");
+            }
 
+            //Check to see if we need to temporarily set this portal destination
+            if(p.shareDestination == null && !portal.flags.contains(PortalFlag.NO_SHARED_PORTALING)){
+                //Set this portal shared destination
+                p.shareDestination = portal.endPoint;
+                //And clear this destination after X minutes!
+                Bukkit.getScheduler().scheduleSyncDelayedTask(this,new Runnable() {
+                    public void run() {
+                        p.shareDestination = null;
+                    }
+                },20 * 30);
+            }
+
+            //Only set their portal usage if they didn't share a portal
+            if(p.shareDestination != null){
+                dbHelper.setPortalEntryLocation(player);
+            }
+            
             Location newLoc = findSafeExit(portal.endPoint); //Try to find a safe location near this portal
             if(newLoc != null){
                 newLoc.setX(newLoc.getX() + 0.5);

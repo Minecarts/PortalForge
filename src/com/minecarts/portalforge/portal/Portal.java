@@ -9,6 +9,7 @@ import java.util.Arrays;
 public class Portal implements Cloneable {
     public int id = -1;
     public Location endPoint = null;
+    public Location shareDestination = null;
     public PortalType type = null;
     public PortalActivation activation = null;
     public ArrayList<PortalFlag> flags = new ArrayList<PortalFlag>();

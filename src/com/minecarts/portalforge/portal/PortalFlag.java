@@ -6,5 +6,6 @@ public enum PortalFlag {
     MESSAGE,
     SUBSCRIBER,
     MODE_CREATIVE,
-    MODE_SURVIVAL
+    MODE_SURVIVAL,
+    NO_SHARED_PORTALING,
 }

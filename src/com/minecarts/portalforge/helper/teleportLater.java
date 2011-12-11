@@ -26,7 +26,7 @@ public class teleportLater implements Runnable{
     public void run() {
         if(e instanceof Player){
             Player p = (Player) e;
-            plugin.logDebug(p,MessageFormat.format("USED: Portal #{0} ({1}): Source: ({2,number,#.##}, {3,number,#.##}, {4,number,#.##}) to Dest: ({5,number,#.##}, {6,number,#.##}, {7,number,#.##}) [P: {8}, Y: {9}]",
+            plugin.logDebug(p,MessageFormat.format("USED: Portal #{0} ({1}): Source: ({2,number,#.##}, {3,number,#.##}, {4,number,#.##}) to Dest: ({5,number,#.##}, {6,number,#.##}, {7,number,#.##}) [P: {8}, Y: {9}] Shared: [{10}]",
                         portal.id,
                         portal.type,
                         e.getLocation().getX(),
@@ -36,12 +36,13 @@ public class teleportLater implements Runnable{
                         portal.endPoint.getY(),
                         portal.endPoint.getZ(),
                         portal.endPoint.getPitch(),
-                        portal.endPoint.getYaw()
+                        portal.endPoint.getYaw(),
+                        portal.shareDestination != null
                         ));
         }
         //Check to see if the end point is blocked (@TODO: this check should be improved)
         Block relativeBlock = portal.endPoint.getWorld().getBlockAt(portal.endPoint).getRelative(BlockFace.UP);
-        if(relativeBlock.getType() == Material.AIR || relativeBlock.getType() == Material.PORTAL || relativeBlock.getType() == Material.VINE || relativeBlock.getType() == Material.TORCH){
+        if(relativeBlock.getType() == Material.AIR || relativeBlock.getType() == Material.PORTAL || relativeBlock.getType() == Material.VINE || relativeBlock.getType() == Material.TORCH || relativeBlock.getType() == Material.DEAD_BUSH){
             String entityName = (e instanceof Player) ? ((Player)e).getName() : e.toString() +"["+e.getEntityId()+"]";
             //Display to console log
             //[P:{8,number,#.##},Y:{9,number,#.##},V:{10,number,#.##}] 
