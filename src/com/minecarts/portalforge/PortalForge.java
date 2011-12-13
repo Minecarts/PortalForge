@@ -133,19 +133,24 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
             } else if(playerWorld.equals("new_nether")){
                 portal.endPoint = dbHelper.getPortalEntryLocation(player,Bukkit.getWorld("new_highridge"));
             }
+
+            System.out.println("PortalForge> DEBUG: Found the enpoint for the portal to be: " + portal.endPoint);
             
             if(p.shareDestination != null && portal.endPoint.distance(p.shareDestination) > 5){
                 portal.endPoint = p.shareDestination;
                 player.sendMessage(ChatColor.DARK_GRAY + "You follow the last person to use this nether portal.");
+                System.out.println("PortalForge> DEBUG: " + player.getName() + " used a shared destination portal");
             }
 
             //Check to see if we need to temporarily set this portal destination
             if(p.shareDestination == null && !portal.flags.contains(PortalFlag.NO_SHARED_PORTALING)){
                 //Set this portal shared destination
                 p.shareDestination = portal.endPoint;
+                System.out.println("PortalForge> DEBUG: Set shared destination to " + p.shareDestination);
                 //And clear this destination after X minutes!
                 Bukkit.getScheduler().scheduleSyncDelayedTask(this,new Runnable() {
                     public void run() {
+                        System.out.println("PortalForge> DEBUG: Cleared shared destination for portal " + p.id);
                         p.shareDestination = null;
                     }
                 },20 * 30);
@@ -153,6 +158,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
 
             //Only set their portal usage if they didn't share a portal
             if(p.shareDestination != null){
+                System.out.println("PortalForge> DEBUG: Set the last used portal location for " + player + " to " + player.getLocation());
                 dbHelper.setPortalEntryLocation(player);
             }
             
