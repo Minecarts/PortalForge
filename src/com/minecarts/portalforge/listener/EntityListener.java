@@ -42,12 +42,18 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
             if(plugin.entityPortaling.contains(entity)) return; //If they're already portaling, skip em.
             plugin.entityPortaling.add(entity);
 
+
             Location blockLocation = e.getLocation().getBlock().getLocation(); //maybe just e.getLocation()?
             Portal portal = plugin.dbHelper.getPortalFromBlockLocation(blockLocation);
                 if(portal == null){
-                    plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(plugin,entity),200); //clear 10 seconds later
-                    plugin.log(MessageFormat.format("{0} tried using a portal not in the DB at: {1}",entity,entity.getLocation()));
-                    return;
+                    //Check to see if this is an end portal block, if it is, add this portal to the DB
+                    if(e.getLocation().getBlock().getType() == Material.ENDER_PORTAL){
+                        //? it's an onPlayerPortal though()
+                    } else {
+                        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(plugin,entity),200); //clear 10 seconds later
+                        plugin.log(MessageFormat.format("{0} tried using a portal not in the DB at: {1}",entity,entity.getLocation()));
+                        return;
+                    }
                 }
                 if(entity instanceof Player){
                     String dest = "[No Destination]";

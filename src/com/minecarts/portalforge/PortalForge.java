@@ -2,7 +2,7 @@ package com.minecarts.portalforge;
 
 import java.util.logging.Logger;
 
-import com.minecarts.portalforge.portal.PortalFlag;
+import com.minecarts.portalforge.portal.*;
 import org.bukkit.*;
 import org.bukkit.World.Environment;
 import org.bukkit.plugin.PluginManager;
@@ -18,9 +18,6 @@ import com.minecarts.portalforge.command.PortalCommand;
 import com.minecarts.portalforge.event.PortalSuccessEvent;
 import com.minecarts.portalforge.listener.*;
 import com.minecarts.portalforge.helper.*;
-import com.minecarts.portalforge.portal.NetherPortal;
-import com.minecarts.portalforge.portal.Portal;
-import com.minecarts.portalforge.portal.PortalType;
 
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -40,6 +37,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
     public HelperDB dbHelper;
     public HelperCache cache;
     public NetherPortal netherPortal;
+    public EndPortal endPortal;
     
     public HashMap<String, Integer> activePortalDesigns = new HashMap<String, Integer>();
     public ArrayList<Entity> entityPortaling = new ArrayList<Entity>();
@@ -54,6 +52,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         this.dbc = (DBConnector) pm.getPlugin("DBConnector");
         this.dbHelper = new HelperDB(this);
         this.netherPortal = new NetherPortal(this);
+        this.endPortal = new EndPortal(this);
         this.cache = new HelperCache(this);
 
         //Register our events
@@ -173,8 +172,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
             player.sendMessage("The skyland has been removed by Notch. This portal is no longer functional.");
             return;
         } else if (portal.type == PortalType.END){
-            player.sendMessage("For now... The End is only accessable via a natural portal.");
-            return;
+            portal.endPoint = Bukkit.getWorld("World_the_end").getSpawnLocation();
         } else {
             log("ERROR: " + portal.id +" has unknown portal type: " + portal.type);
             player.sendMessage("Unknown portal type: " + portal.type);

@@ -3,6 +3,7 @@ package com.minecarts.portalforge.helper;
 import java.text.MessageFormat;
 
 import com.minecarts.portalforge.portal.PortalFlag;
+import com.minecarts.portalforge.portal.PortalType;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
@@ -87,15 +88,23 @@ public class teleportLater implements Runnable{
                     ((Player) e).sendMessage(portal.message);
                 }
             }
+            
+            //Added to prevent end portals from burning players if they fall in the lava
+            if(portal.type == PortalType.END){
+                if(e instanceof Player){
+                    Player p = (Player)e;
+                    p.setFireTicks(0);
+                    p.setHealth(20);
+                }
+            }
+            
         } else {
             //It was blocked, display a message?
             if(e instanceof Player){
                 ((Player)e).sendMessage("This portal exit is obstructed.");
             }
             plugin.log("Portal exit blocked:" + portal.endPoint);
-            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(plugin,e),40);
+            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new clearPortalingState(plugin, e), 40);
         }
-        
-        
     }
 }
