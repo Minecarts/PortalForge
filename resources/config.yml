@@ -1,0 +1,6 @@
+messages:
+    NOT_YET_IMPLEMENTED: "This portal type is not yet implemented."
+    NO_LONGER_IMPLEMENTED: "This portal type has been removed from the game."
+    REQUIRE_EMPTY_INVENTORY: "Your inventory must be empty to use this portal."
+portal:
+    touch_timeout: 5
