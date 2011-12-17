@@ -40,6 +40,8 @@ public class BasePortal{
                 }
             }
         }
+
+        Bukkit.getServer().getPluginManager().callEvent(new PortalSuccessEvent(this));
     }
     public void onPortal(){
         if(portalingEntityIsPlayer()){
@@ -104,11 +106,15 @@ public class BasePortal{
         if(loc == null) return;
         this.exitLocation = loc;
     }
-    public void setExitLocation(World w, Double x, Double y, Double z){
-        if(w == null || x == null || y == null || z == null) return;
-        this.exitLocation = new Location(w,x,y,z);
+    public void setExitLocation(World w, Double x, Double y, Double z, Float pitch, Float yaw){
+        if(w == null || x == null || y == null || z == null || pitch == null || yaw == null) return;
+        this.exitLocation = new Location(w,x,y,z,yaw,pitch);
     }
     public Location getExitLocation(){
+        return this.exitLocation;
+    }
+    public Location getSafeExitLocation(){
+        //TODO: Find a safe exit point..
         return this.exitLocation;
     }
     
@@ -116,6 +122,9 @@ public class BasePortal{
         this.exitVector = v;
     }
     public void setExitVector(Float x, Float y, Float z){
+        if(x == null) x = 0f;
+        if(y == null) y = 0f;
+        if(z == null) z = 0f;
         this.exitVector = new Vector(x,y,z);
     }
     public Vector getExitVector(){
