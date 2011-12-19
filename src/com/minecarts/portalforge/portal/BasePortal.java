@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -19,37 +20,38 @@ import java.util.ArrayList;
 public class BasePortal{
     private PortalType type; 
     private PortalActivation activation;
-    private ArrayList<PortalFlag> flags;
+    private ArrayList<PortalFlag> flags = new ArrayList<PortalFlag>();
     private PortalForge plugin;
     private Entity portalingEntity; //The entity doing the portaling
     private Location exitLocation;
+    private Location enterLocation;
     private Vector exitVector = new Vector(0,0,0);
     private String message;
     private Long id;
 
-    public void onTouch(){
-        if(portalingEntityIsPlayer()){
-            Player player = getPortalingPlayer();
 
-            if(containsFlag(PortalFlag.REQUIRE_EMPTY_INVENTORY)){
-                for(ItemStack stack : player.getInventory().getContents()){
-                    if(stack != null && stack.getTypeId() != 0){
-                        player.sendMessage(getPlugin().getConfig().getString("REQUIRE_EMPTY_INVENTORY"));
-                        return;
-                    }
-                }
-            }
+//Below are the functions that other protal types MAY want to consider overriding
+//  for some customized special features
+    public void onTouch(){
+        //Check to see if this portal is linked
+        if(getExitLocation() == null){
+            if(portalingEntityIsPlayer()){ getPortalingPlayer().sendMessage(getPlugin().getConfig().getString("messages.PORTAL_NOT_LINKED")); }
+            return;
         }
+
+        //Attempt to verify the flags
+        if(!checkPrePortalFlags()) return;
+
 
         Bukkit.getServer().getPluginManager().callEvent(new PortalSuccessEvent(this));
     }
     public void onPortal(){
-        if(portalingEntityIsPlayer()){
-            //Unfortunately we need to check the flags again
-            if(containsFlag(PortalFlag.REQUIRE_EMPTY_INVENTORY)){
-                return;
-            }
+        if(getExitLocation() == null){
+            if(portalingEntityIsPlayer()){ getPortalingPlayer().sendMessage(getPlugin().getConfig().getString("messages.PORTAL_NOT_LINKED")); }
+            return;
         }
+
+        if(!checkPrePortalFlags()) return;
 
         //Fire the portal event
         Bukkit.getServer().getPluginManager().callEvent(new PortalSuccessEvent(this));
@@ -62,7 +64,7 @@ public class BasePortal{
                 p.getInventory().clear();
             }
             if(containsFlag(PortalFlag.MESSAGE)){
-                //TODO
+                p.sendMessage(getMessage());
             }
             if(containsFlag(PortalFlag.MODE_CREATIVE)){
                 p.setGameMode(GameMode.CREATIVE);
@@ -72,7 +74,45 @@ public class BasePortal{
             }
         }
     }
+    
+    public void showDebug(){
+        if(portalingEntityIsPlayer() && getPortalingPlayer().hasPermission("portalforge.debug")){
+            getPortalingPlayer().sendMessage("Touched portal: " + getId());
+        }
+    }
+    
+    public void portalCreated(Player player, Block block){
+        getPlugin().logAndMessagePlayer(player, "Created portal " + getId());
+    }
 
+
+    //Called in both the onTouch() and onPortal() cases
+    //  May want to override to create or alter specific flag checks for certain portals
+    public boolean checkPrePortalFlags(){
+        if(portalingEntityIsPlayer()){
+            Player player = getPortalingPlayer();
+
+            if(containsFlag(PortalFlag.REQUIRE_EMPTY_INVENTORY)){
+                for(ItemStack stack : player.getInventory().getContents()){
+                    if(stack != null && stack.getTypeId() != 0){
+                        player.sendMessage(getPlugin().getConfig().getString("messages.REQUIRE_EMPTY_INVENTORY"));
+                        return false;
+                    }
+                }
+            }
+
+            if(containsFlag(PortalFlag.SUBSCRIBER)){
+                if(!player.hasPermission("subscriber")){
+                    player.sendMessage(getPlugin().getConfig().getString("messages.SUBSCRIBER_ONLY_PORTAL"));
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+//END OVERRIDE FLAGS
+
+//The functions listed below should only  be called internally by PortalForge
     public void teleportEntity(){
         teleportEntity(1);
     }
@@ -87,7 +127,7 @@ public class BasePortal{
     }
 
 
-//Getters nad setters    
+//Getters and setters
     public void setId(Long id){
         this.id = id;
     }
@@ -100,6 +140,15 @@ public class BasePortal{
     }
     public String getMessage(){
         return this.message;
+    }
+    
+    
+    public void setEnterLocation(Location loc){
+        if(loc == null) return;
+        this.enterLocation = loc;
+    }
+    public Location getEnterLocation(){
+        return this.enterLocation;
     }
     
     public void setExitLocation(Location loc){
@@ -174,6 +223,9 @@ public class BasePortal{
 
     public void setFlags(String flags){
         if(flags == null) return;
+        if(this.flags == null){
+            this.flags = new ArrayList<PortalFlag>();
+        }
         for(String flag : flags.split(",")){
             this.flags.add(PortalFlag.valueOf(flag));
         }

@@ -1,6 +1,10 @@
 package com.minecarts.portalforge.listener;
 
+import com.minecarts.portalforge.portal.NetherPortal;
+import com.minecarts.portalforge.portal.internal.PortalActivation;
+import com.minecarts.portalforge.portal.internal.PortalType;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
@@ -19,6 +23,19 @@ public class BlockListener extends org.bukkit.event.block.BlockListener{
             //See if this player is editing a portal
             if(plugin.getEditingPortal(e.getPlayer()) != null){
                 plugin.addBlockToPortal(e.getPlayer(),e.getBlock().getLocation());
+            } else {
+                Player player = e.getPlayer();
+                if(player.getItemInHand().getType() == Material.FLINT_AND_STEEL){
+                    //They ignited a nether portal
+                    // Create a new portal
+                    NetherPortal portal = new NetherPortal();
+                    portal.setActivation(PortalActivation.DELAYED);
+                    portal.setType(PortalType.NETHER);
+                    plugin.createPortal(player,portal,e.getBlock());
+                    //Get the block
+                    
+                    //Call the netheRPortal detection function
+                }
             }
         }
     }

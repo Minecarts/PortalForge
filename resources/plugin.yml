@@ -26,7 +26,7 @@ permissions:
             default: true
     portalforge.debug:
             description: "Display debugging output when using portals"
-            default: false
+            default: op
     portalforge.admin:
             description: "Allow access to administration commands for portals"
             default: op

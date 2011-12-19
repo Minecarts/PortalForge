@@ -14,8 +14,6 @@ import com.minecarts.portalforge.PortalForge;
 
 public class PortalListener extends CustomEventListener{
     private PortalForge plugin;
-    public HashMap<String, Location> entryPortalTracker = new HashMap<String, Location>();
-
     public PortalListener(PortalForge plugin){
         this.plugin = plugin;
     }

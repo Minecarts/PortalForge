@@ -21,7 +21,9 @@ public class EntityListener extends org.bukkit.event.entity.EntityListener{
         if(entity instanceof Player){
             plugin.entityTouchedPortal(entity, e.getLocation()); //This player touched a portal
         } else if(entity instanceof Animals || entity instanceof Monster){
-            plugin.entityUsedPortal(entity); //Non player entities should be teleported instantly
+            //plugin.entityUsedPortal(entity); //Non player entities should be teleported instantly
+        } else {
+            entity.remove(); //Remove thigns such as items immediately
         }
     }
 }

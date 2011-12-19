@@ -13,9 +13,11 @@ import com.minecarts.portalforge.listener.PlayerListener;
 import com.minecarts.portalforge.listener.PortalListener;
 import com.minecarts.portalforge.portal.*;
 import com.minecarts.portalforge.portal.internal.PortalActivation;
+import com.minecarts.portalforge.portal.internal.PortalFlag;
 import com.minecarts.portalforge.portal.internal.PortalType;
 import org.bukkit.*;
 
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -33,8 +35,11 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
     private final BlockListener blockListener = new BlockListener(this);
     private final PortalListener portalListener = new PortalListener(this);
     
-    private ArrayList<Entity> portalingEntities = new ArrayList<Entity>();
+    private ArrayList<Entity> portalingEntitiesTouch = new ArrayList<Entity>();
+    private ArrayList<Entity> portalingEntitiesPortal = new ArrayList<Entity>();
+
     private HashMap<Player, BasePortal> portalEditingMap = new HashMap<Player, BasePortal>();
+    private HashMap<Long, BasePortal> portalCache = new HashMap<Long, BasePortal>();
     
     public void onEnable() {
         PluginManager pm = getServer().getPluginManager();
@@ -83,22 +88,49 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         }
     }
 
-    public void entityPortalingAdd(Entity e){
-        if(!portalingEntities.contains(e)){
-            portalingEntities.add(e);
+    //TODO: Need to really cache by location as well
+    public void cachePortal(BasePortal portal){
+        this.portalCache.put(portal.getId(),portal);
+    }
+    public void cacheGet(Long id){
+        this.portalCache.get(id);
+    }
+    public void cacheClear(Long id){
+        this.portalCache.remove(id);
+    }
+
+    public void entityPortalingAdd(Entity e, PortalActivation type){
+        if(type == PortalActivation.INSTANT){
+            if(!portalingEntitiesTouch.contains(e)){
+                portalingEntitiesTouch.add(e);
+            }
+        } else if(type == PortalActivation.DELAYED){
+            if(!portalingEntitiesPortal.contains(e)){
+                portalingEntitiesPortal.add(e);
+            }
         }
     }
-    public void entityPortalingRemove(Entity e){
-        portalingEntities.remove(e);
+    public void entityPortalingRemove(Entity e, PortalActivation type){
+        if(type == PortalActivation.INSTANT){
+            portalingEntitiesTouch.remove(e);
+        } else if(type == PortalActivation.DELAYED){
+            portalingEntitiesPortal.remove(e);
+        }
     }
-    public boolean isEntityPortaling(Entity e){
-        return portalingEntities.contains(e);
+    public boolean isEntityPortaling(Entity e, PortalActivation type){
+        if(type == PortalActivation.INSTANT){
+            return portalingEntitiesTouch.contains(e);
+        } else if(type == PortalActivation.DELAYED){
+            return portalingEntitiesPortal.contains(e);
+        }
+        log("Unknown isEntityPortaling type" + type.name());
+        return false;
     }
     
     public void entityTouchedPortal(final Entity entity, final Location loc){
         //Add this entity to the portal touched list to prevent spaming of events
-        if(isEntityPortaling(entity)) return;
-        entityPortalingAdd(entity);
+        if(isEntityPortaling(entity, PortalActivation.INSTANT)) return;
+        entityPortalingAdd(entity, PortalActivation.INSTANT);
 
         //What to do here?
         Query query = getQuery(entity,PortalActivation.INSTANT);
@@ -111,12 +143,14 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(this,new Runnable() {
             public void run() {
-                PortalForge.this.entityPortalingRemove(entity);
+                PortalForge.this.entityPortalingRemove(entity, PortalActivation.INSTANT);
             }
-        },20 * getConfig().getInt("portal.touch_timeout")); //Reset portaling state X seconds later
+        },20 * getConfig().getInt("portal.touch_timeout",3)); //Reset portaling state X seconds later
     }
     
     public void entityUsedPortal(final Entity entity){
+        if(isEntityPortaling(entity, PortalActivation.DELAYED)) return;
+        entityPortalingAdd(entity, PortalActivation.DELAYED);
 
         Location loc = getNearestPortalBlock(entity);
         Query query = getQuery(entity,PortalActivation.DELAYED);
@@ -126,6 +160,12 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                 loc.getBlockY(),
                 loc.getBlockZ()
         );
+
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this,new Runnable() {
+            public void run() {
+                PortalForge.this.entityPortalingRemove(entity, PortalActivation.DELAYED);
+            }
+        },20 * getConfig().getInt("portal.portal_timeout",3)); //Reset portaling state X seconds later
     }
 
     public Location getNearestPortalBlock(Entity e){
@@ -144,14 +184,20 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
     public void clearEditingPortal(final Player player){
         portalEditingMap.remove(player);
     }
-    
+
     public void createPortal(final Player player, final BasePortal portal){
+        createPortal(player,portal,null);
+    }
+    public void createPortal(final Player player, final BasePortal portal, final Block block){
+        if(portal.getPlugin() == null) portal.setPlugin(this); //Always set the plugin when creating a portal
         Query query = new Query("INSERT INTO portals(`type`,`activation`) VALUES (?,?)") {
             @Override
             public void onInsertId(Integer id) {
                 setEditingPortal(player, portal);
                 portal.setId((long)id); //Update the portal reference's ID
-                logAndMessagePlayer(player, "Created portal " + id);
+                //Trigger the portalCreated() to the portal, and pass a block to the callback, used for detecting
+                //  pre-existing portals such as nether and end portals
+                portal.portalCreated(player,block);
             }
             @Override
             public void onException(Exception x, FinalQuery query) {
@@ -206,16 +252,21 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
     }
 
     public void addBlockToPortal(final Player player, final Location blockLocation){
+        addBlockToPortal(player,blockLocation,false);
+    }
+    public void addBlockToPortal(final Player player, final Location blockLocation, final boolean silent){
         Query query = new Query("INSERT IGNORE INTO portal_blocks(portal_id,world,x,y,z) VALUES (?,?,?,?,?)") {
             @Override
             public void onInsertId(Integer id) {
-                logAndMessagePlayer(player, MessageFormat.format("Added portal block at ({4}: {0},{1},{2}) to field {3}",
-                        blockLocation.getBlockX(),
-                        blockLocation.getBlockY(),
-                        blockLocation.getBlockZ(),
-                        getEditingPortal(player).getId(),
-                        blockLocation.getWorld().getName()
-                ));
+                if(!silent){
+                    logAndMessagePlayer(player, MessageFormat.format("Added portal block at ({4}: {0},{1},{2}) to field {3}",
+                            blockLocation.getBlockX(),
+                            blockLocation.getBlockY(),
+                            blockLocation.getBlockZ(),
+                            getEditingPortal(player).getId(),
+                            blockLocation.getWorld().getName()
+                    ));
+                }
             }
             @Override
             public void onException(Exception x, FinalQuery query) {
@@ -331,6 +382,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                     portal.setPortalingEntity(entity); //Only set the entity, we don't know anything else
                     portal.setType(PortalType.UNKNOWN);
                     if(activation == PortalActivation.INSTANT){ //How this portal was activated
+                        portal.showDebug(); //Show debug on touch for all portals
                         portal.onTouch();
                     } else if (activation == PortalActivation.DELAYED){
                         portal.onPortal();
@@ -385,6 +437,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                 }
 
                 if(activation == PortalActivation.INSTANT){
+                    portal.showDebug();
                     portal.onTouch();
                 } else if(activation == PortalActivation.DELAYED){
                     portal.onPortal(); //Call it!
@@ -406,22 +459,12 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         };
     }
 
-
-    public void doHistoricalTeleport(final Player player, final String worldName, final NetherPortal portal){
-        Query query = new Query("SELECT * FROM `portal_history` WHERE `player` = ? AND `world` = ? LIMIT 1") {
+    
+    public void setPortalHistory(final Player player, final NetherPortal portal){
+        Query query = new Query("INSERT INTO portal_history(player, world, x, y, z, portal_id, timestamp, dest_world, dest_x, dest_y, dest_z) VALUES (?,?,?,?,?,?,NOW(),?,?,?,?) ON DUPLICATE KEY UPDATE world = ?, x = ?, y = ?, z = ?, portal_id = ?, timestamp = NOW(), dest_world = ?, dest_x = ?, dest_y = ?, dest_z = ?"){
             @Override
-            public void onFetchOne(HashMap row) {
-                if(row == null){
-                    //No history, do a spawn teleport
-                    return;
-                }
-                Location loc = new Location(
-                        Bukkit.getWorld((String)row.get("world")),
-                        (Double)row.get("x"),
-                        (Double)row.get("y"),
-                        (Double)row.get("z")
-                );
-                portal.historicalTeleport(loc);
+            public void onAffected(Integer affected) {
+
             }
             @Override
             public void onException(Exception x, FinalQuery query) {
@@ -434,6 +477,101 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                 }
             }
         };
-        query.fetchOne(player.getName(),worldName);
+        query.affected(
+                player.getName(),
+                player.getLocation().getWorld().getName(),
+                player.getLocation().getX(),
+                player.getLocation().getY(),
+                player.getLocation().getZ(),
+                portal.getId(),
+                portal.getExitLocation().getWorld().getName(),
+                portal.getExitLocation().getX(),
+                portal.getExitLocation().getY(),
+                portal.getExitLocation().getZ(),
+                player.getLocation().getWorld().getName(),
+                player.getLocation().getX(),
+                player.getLocation().getY(),
+                player.getLocation().getZ(),
+                portal.getId(),
+                portal.getExitLocation().getWorld().getName(),
+                portal.getExitLocation().getX(),
+                portal.getExitLocation().getY(),
+                portal.getExitLocation().getZ()
+                );
+    }
+
+    
+    public void setPortalEnterLocation(final BasePortal portal){
+        Query query = new Query("SELECT * FROM `portal_blocks` WHERE `portal_id` = ? LIMIT 1") {
+            @Override
+            public void onFetchOne(HashMap row) {
+                if(row != null){
+                    Location loc = new Location(
+                            Bukkit.getWorld((String)row.get("world")),
+                            (Double)row.get("x"),
+                            (Double)row.get("y"),
+                            (Double)row.get("z")
+                    );
+                    portal.setEnterLocation(loc);
+                }
+            }
+        };
+    }
+    
+    //Does a shared historical teleport
+    public void doHistoricalTeleport(final Player player, final String worldName, final NetherPortal portal){
+        //TODO: Make 30 SECOND interval configurable
+        String queryString = "SELECT * FROM `portal_history` WHERE (`portal_id` = ? AND `timestamp` >= DATE_SUB(NOW(), INTERVAL 30 SECOND)) OR (`player` = ? AND `world` = ?) ORDER BY `timestamp` DESC LIMIT 1";
+
+        if(portal.containsFlag(PortalFlag.NO_SHARED_PORTALING)){
+            queryString = "SELECT * FROM `portal_history` WHERE (`player` = ? AND `world` = ?) LIMIT 1";
+        }
+        Query query = new Query(queryString) {
+            @Override
+            public void onFetchOne(HashMap row) {
+                if(row == null){
+                    portal.historicalTeleport(Bukkit.getWorld(worldName).getSpawnLocation());
+                    //No history, do a spawn teleport
+                    return;
+                }
+                if(portal.getPortalingPlayer().getName().equals((String)row.get("player"))){ //If a history location for this player
+                    Location loc = new Location(
+                            Bukkit.getWorld((String)row.get("world")),
+                            (Double)row.get("x"),
+                            (Double)row.get("y"),
+                            (Double)row.get("z")
+                    );
+                    portal.historicalTeleport(loc);
+                } else { //Someone else destination is being used, so fire the shared teleport for the portal
+                    Location loc = new Location(
+                            Bukkit.getWorld((String)row.get("dest_world")),
+                            (Double)row.get("dest_x"),
+                            (Double)row.get("dest_y"),
+                            (Double)row.get("dest_z")
+                    );
+                    portal.sharedTeleport((String)row.get("player"),loc);
+                }
+            }
+            @Override
+            public void onException(Exception x, FinalQuery query) {
+                // rethrow
+                try {
+                    throw x;
+                }
+                catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        if(portal.containsFlag(PortalFlag.NO_SHARED_PORTALING)){
+            query.fetchOne(player.getName(),worldName);
+        } else {
+            query.fetchOne(portal.getId(),player.getName(),worldName);
+        }
+    }
+    
+    private BasePortal constructPortalFromRow(HashMap row){
+        //TODO, abstract the duplicate querying under diffetent conditions to this, returns a portal from a row of portal data
+        return null;
     }
 }
