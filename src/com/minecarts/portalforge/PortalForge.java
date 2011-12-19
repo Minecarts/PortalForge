@@ -76,27 +76,10 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         player.sendMessage(msg);
     }
 
-    public static void playerMessageDebug(Player player, String msg){
-        if(player.hasPermission("portalforge.debug")){
-            player.sendMessage(ChatColor.GRAY + msg);
-        }
-    }
-
     class Query extends com.minecarts.dbquery.Query {
         public Query(String sql) {
             super(PortalForge.this, dbq.getProvider("minecarts"), sql);
         }
-    }
-
-    //TODO: Need to really cache by location as well
-    public void cachePortal(BasePortal portal){
-        this.portalCache.put(portal.getId(),portal);
-    }
-    public void cacheGet(Long id){
-        this.portalCache.get(id);
-    }
-    public void cacheClear(Long id){
-        this.portalCache.remove(id);
     }
 
     public void entityPortalingAdd(Entity e, PortalActivation type){
@@ -133,8 +116,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         entityPortalingAdd(entity, PortalActivation.INSTANT);
 
         //What to do here?
-        Query query = getQuery(entity,PortalActivation.INSTANT);
-        query.fetchOne(
+        getQuery(entity,PortalActivation.INSTANT).fetchOne(
                 loc.getWorld().getName(),
                 loc.getBlockX(),
                 loc.getBlockY(),
@@ -153,8 +135,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         entityPortalingAdd(entity, PortalActivation.DELAYED);
 
         Location loc = getNearestPortalBlock(entity);
-        Query query = getQuery(entity,PortalActivation.DELAYED);
-        query.fetchOne(
+        getQuery(entity,PortalActivation.DELAYED).fetchOne(
                 loc.getWorld().getName(),
                 loc.getBlockX(),
                 loc.getBlockY(),
@@ -190,7 +171,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
     }
     public void createPortal(final Player player, final BasePortal portal, final Block block){
         if(portal.getPlugin() == null) portal.setPlugin(this); //Always set the plugin when creating a portal
-        Query query = new Query("INSERT INTO portals(`type`,`activation`) VALUES (?,?)") {
+        new Query("INSERT INTO portals(`type`,`activation`) VALUES (?,?)") {
             @Override
             public void onInsertId(Integer id) {
                 setEditingPortal(player, portal);
@@ -209,15 +190,14 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                     e.printStackTrace();
                 }
             }
-        };
-        query.insertId(
+        }.insertId(
                 portal.getType().name(),
                 portal.getActivation().name()
         );
     }
 
     public void updatePortal(final Player player, final BasePortal portal){
-        Query query = new Query("UPDATE `portals` SET `dest_world` =?,`dest_x`=?,`dest_y`=?,`dest_z`=?,`dest_pitch`=?,`dest_yaw`=?, `dest_vel_x`=?, `dest_vel_y`=?, `dest_vel_z`=?,`type`=?,`activation`=?,`flags`=?,`message`=? WHERE `id`=? LIMIT 1") {
+        new Query("UPDATE `portals` SET `dest_world` =?,`dest_x`=?,`dest_y`=?,`dest_z`=?,`dest_pitch`=?,`dest_yaw`=?, `dest_vel_x`=?, `dest_vel_y`=?, `dest_vel_z`=?,`type`=?,`activation`=?,`flags`=?,`message`=? WHERE `id`=? LIMIT 1") {
             @Override
             public void onAffected(Integer affected) {
                 logAndMessagePlayer(player, " updated " + affected + " portal with ID: " + portal.getId());
@@ -232,8 +212,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                     e.printStackTrace();
                 }
             }
-        };
-        query.affected(
+        }.affected(
                 portal.getExitLocation().getWorld().getName(),
                 portal.getExitLocation().getX(),
                 portal.getExitLocation().getY(),
@@ -255,32 +234,31 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         addBlockToPortal(player,blockLocation,false);
     }
     public void addBlockToPortal(final Player player, final Location blockLocation, final boolean silent){
-        Query query = new Query("INSERT IGNORE INTO portal_blocks(portal_id,world,x,y,z) VALUES (?,?,?,?,?)") {
-            @Override
-            public void onInsertId(Integer id) {
-                if(!silent){
-                    logAndMessagePlayer(player, MessageFormat.format("Added portal block at ({4}: {0},{1},{2}) to field {3}",
-                            blockLocation.getBlockX(),
-                            blockLocation.getBlockY(),
-                            blockLocation.getBlockZ(),
-                            getEditingPortal(player).getId(),
-                            blockLocation.getWorld().getName()
-                    ));
-                }
-            }
-            @Override
-            public void onException(Exception x, FinalQuery query) {
-                // rethrow
-                try {
-                    throw x;
-                }
-                catch(Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        };
         if(getEditingPortal(player) != null){
-            query.insertId(
+            new Query("INSERT IGNORE INTO portal_blocks(portal_id,world,x,y,z) VALUES (?,?,?,?,?)") {
+                @Override
+                public void onInsertId(Integer id) {
+                    if(!silent){
+                        logAndMessagePlayer(player, MessageFormat.format("Added portal block at ({4}: {0},{1},{2}) to field {3}",
+                                blockLocation.getBlockX(),
+                                blockLocation.getBlockY(),
+                                blockLocation.getBlockZ(),
+                                getEditingPortal(player).getId(),
+                                blockLocation.getWorld().getName()
+                        ));
+                    }
+                }
+                @Override
+                public void onException(Exception x, FinalQuery query) {
+                    // rethrow
+                    try {
+                        throw x;
+                    }
+                    catch(Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }.insertId(
                     getEditingPortal(player).getId(),
                     blockLocation.getWorld().getName(),
                     blockLocation.getBlockX(),
@@ -294,7 +272,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
 
 
     public void setEditingPortalFromId(final Player player, final Integer id){
-        Query query = new Query("SELECT `portals`.* FROM `portals` WHERE `id` = ? LIMIT 1") {
+        new Query("SELECT `portals`.* FROM `portals` WHERE `id` = ? LIMIT 1") {
             @Override
             public void onFetchOne(HashMap row) {
                 BasePortal portal;
@@ -364,8 +342,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                     //query.run();
                 }
             }
-        };
-        query.fetchOne(id);
+        }.fetchOne(id);
     }
     
         
@@ -461,7 +438,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
 
     
     public void setPortalHistory(final Player player, final NetherPortal portal){
-        Query query = new Query("INSERT INTO portal_history(player, world, x, y, z, portal_id, timestamp, dest_world, dest_x, dest_y, dest_z) VALUES (?,?,?,?,?,?,NOW(),?,?,?,?) ON DUPLICATE KEY UPDATE world = ?, x = ?, y = ?, z = ?, portal_id = ?, timestamp = NOW(), dest_world = ?, dest_x = ?, dest_y = ?, dest_z = ?"){
+         new Query("INSERT INTO portal_history(player, world, x, y, z, portal_id, timestamp, dest_world, dest_x, dest_y, dest_z) VALUES (?,?,?,?,?,?,NOW(),?,?,?,?) ON DUPLICATE KEY UPDATE world = ?, x = ?, y = ?, z = ?, portal_id = ?, timestamp = NOW(), dest_world = ?, dest_x = ?, dest_y = ?, dest_z = ?"){
             @Override
             public void onAffected(Integer affected) {
 
@@ -476,8 +453,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                     e.printStackTrace();
                 }
             }
-        };
-        query.affected(
+        }.affected(
                 player.getName(),
                 player.getLocation().getWorld().getName(),
                 player.getLocation().getX(),
@@ -497,7 +473,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                 portal.getExitLocation().getX(),
                 portal.getExitLocation().getY(),
                 portal.getExitLocation().getZ()
-                );
+        );
     }
 
     
