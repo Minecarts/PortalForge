@@ -1,7 +1,13 @@
 package com.minecarts.portalforge.portal;
 
 
-public class UnknownPortal extends BasePortal {
+import com.minecarts.portalforge.portal.internal.PortalType;
+
+public class UnknownPortal extends GenericPortal {
+
+    public UnknownPortal(){
+        setType(PortalType.UNKNOWN);
+    }
 
     @Override
     public void showDebug(){

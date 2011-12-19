@@ -30,7 +30,6 @@ public class BlockListener extends org.bukkit.event.block.BlockListener{
                     // Create a new portal
                     NetherPortal portal = new NetherPortal();
                     portal.setActivation(PortalActivation.DELAYED);
-                    portal.setType(PortalType.NETHER);
                     plugin.createPortal(player,portal,e.getBlock());
                     //Get the block
                     

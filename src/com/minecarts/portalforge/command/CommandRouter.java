@@ -17,6 +17,7 @@ public class CommandRouter extends CommandHandler{
         DONE,
         EXIT,
         EDIT,
+        GOTO,
     }
 
     @Override
@@ -44,6 +45,8 @@ public class CommandRouter extends CommandHandler{
                 return PortalExit.handleCommand(plugin,player,args);
             case EDIT:
                 return PortalEdit.handleCommand(plugin,player,args);
+            case GOTO:
+                return PortalGoto.handleCommand(plugin,player,args);
             default: //This won't ever be reached unless the command is in theCommands enum above
                 return false;
         }

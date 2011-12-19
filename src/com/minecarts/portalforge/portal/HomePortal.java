@@ -1,10 +1,14 @@
 package com.minecarts.portalforge.portal;
 
 
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
+import com.minecarts.portalforge.portal.internal.PortalType;
 
-public class HomePortal extends BasePortal {
+public class HomePortal extends GenericPortal {
+
+    public HomePortal(){
+        setType(PortalType.HOME);
+    }
+
     @Override
     public void onTouch(){
         if(portalingEntityIsPlayer()){

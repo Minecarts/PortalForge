@@ -1,7 +1,6 @@
 package com.minecarts.portalforge.command;
 
 import com.minecarts.portalforge.PortalForge;
-import com.minecarts.portalforge.portal.BasePortal;
 import org.bukkit.entity.Player;
 
 /**

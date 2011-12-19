@@ -1,6 +1,7 @@
 package com.minecarts.portalforge.portal;
 
 
+import com.minecarts.portalforge.portal.internal.PortalType;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -8,10 +9,14 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 
-public class NetherPortal extends BasePortal {
+public class NetherPortal extends GenericPortal {
 
     private BlockFace[] faces = {BlockFace.NORTH,BlockFace.EAST,BlockFace.SOUTH,BlockFace.WEST};
     private ArrayList<Block> foundBlocks = new ArrayList<Block>();
+
+    public NetherPortal(){
+        setType(PortalType.NETHER);
+    }
 
     @Override
     public void onTouch(){
@@ -32,7 +37,7 @@ public class NetherPortal extends BasePortal {
 
         //Only players can use a NetherPortal
         if(portalingEntityIsPlayer()){
-            getPlugin().doHistoricalTeleport(getPortalingPlayer(),targetWorld,this);
+            getPlugin().doHistoricalTeleport(getPortalingPlayer(), targetWorld, this);
         } else {
             super.onPortal(); //Portal the entity immediately, TODO: Might break shit.
         }
@@ -71,7 +76,7 @@ public class NetherPortal extends BasePortal {
 
     public void historicalTeleport(Location loc){
         setExitLocation(loc);
-        getPlugin().setPortalHistory(getPortalingPlayer(),this);
+        getPlugin().setPortalHistory(getPortalingPlayer(), this);
         super.onPortal();
     }
 

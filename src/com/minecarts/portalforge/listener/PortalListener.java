@@ -1,13 +1,9 @@
 package com.minecarts.portalforge.listener;
 
-import java.util.HashMap;
-
 import com.minecarts.portalforge.event.PortalSuccessEvent;
-import com.minecarts.portalforge.portal.BasePortal;
-import com.minecarts.portalforge.portal.NetherPortal;
+import com.minecarts.portalforge.portal.GenericPortal;
 import org.bukkit.event.CustomEventListener;
 import org.bukkit.event.Event;
-import org.bukkit.Location;
 
 import com.minecarts.portalforge.PortalForge;
 
@@ -24,7 +20,7 @@ public class PortalListener extends CustomEventListener{
             PortalSuccessEvent e = (PortalSuccessEvent) event;
             if(e.isCancelled()) return;
 
-            BasePortal portal = e.getPortal();
+            GenericPortal portal = e.getPortal();
             portal.teleportEntity();
         }
     }

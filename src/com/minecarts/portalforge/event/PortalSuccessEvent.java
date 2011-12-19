@@ -1,20 +1,19 @@
 package com.minecarts.portalforge.event;
 
-import com.minecarts.portalforge.portal.BasePortal;
-import org.bukkit.entity.Entity;
+import com.minecarts.portalforge.portal.GenericPortal;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 
 public class PortalSuccessEvent extends Event implements Cancellable {
     private boolean cancel = false;
-    private BasePortal portal;
+    private GenericPortal portal;
 
-    public PortalSuccessEvent(BasePortal portal) {
+    public PortalSuccessEvent(GenericPortal portal) {
         super("PortalSuccessEvent");
         this.portal = portal;
     }
 
-    public BasePortal getPortal(){
+    public GenericPortal getPortal(){
         return this.portal;
     }
     public boolean isCancelled() {

@@ -38,8 +38,8 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
     private ArrayList<Entity> portalingEntitiesTouch = new ArrayList<Entity>();
     private ArrayList<Entity> portalingEntitiesPortal = new ArrayList<Entity>();
 
-    private HashMap<Player, BasePortal> portalEditingMap = new HashMap<Player, BasePortal>();
-    private HashMap<Long, BasePortal> portalCache = new HashMap<Long, BasePortal>();
+    private HashMap<Player, GenericPortal> portalEditingMap = new HashMap<Player, GenericPortal>();
+    private HashMap<Long, GenericPortal> portalCache = new HashMap<Long, GenericPortal>();
     
     public void onEnable() {
         PluginManager pm = getServer().getPluginManager();
@@ -156,20 +156,20 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
 
 
 
-    public void setEditingPortal(final Player player, BasePortal portal){
+    public void setEditingPortal(final Player player, GenericPortal portal){
         portalEditingMap.put(player,portal);
     }
-    public BasePortal getEditingPortal(final Player player){
+    public GenericPortal getEditingPortal(final Player player){
         return portalEditingMap.get(player);
     }
     public void clearEditingPortal(final Player player){
         portalEditingMap.remove(player);
     }
 
-    public void createPortal(final Player player, final BasePortal portal){
+    public void createPortal(final Player player, final GenericPortal portal){
         createPortal(player,portal,null);
     }
-    public void createPortal(final Player player, final BasePortal portal, final Block block){
+    public void createPortal(final Player player, final GenericPortal portal, final Block block){
         if(portal.getPlugin() == null) portal.setPlugin(this); //Always set the plugin when creating a portal
         new Query("INSERT INTO portals(`type`,`activation`) VALUES (?,?)") {
             @Override
@@ -196,7 +196,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         );
     }
 
-    public void updatePortal(final Player player, final BasePortal portal){
+    public void updatePortal(final Player player, final GenericPortal portal){
         new Query("UPDATE `portals` SET `dest_world` =?,`dest_x`=?,`dest_y`=?,`dest_z`=?,`dest_pitch`=?,`dest_yaw`=?, `dest_vel_x`=?, `dest_vel_y`=?, `dest_vel_z`=?,`type`=?,`activation`=?,`flags`=?,`message`=? WHERE `id`=? LIMIT 1") {
             @Override
             public void onAffected(Integer affected) {
@@ -275,7 +275,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         new Query("SELECT `portals`.* FROM `portals` WHERE `id` = ? LIMIT 1") {
             @Override
             public void onFetchOne(HashMap row) {
-                BasePortal portal;
+                GenericPortal portal;
                 //Handle unknown portals here, since row == null if it is not in the DB
                 if(row == null){
                     player.sendMessage("There is no portal with the id: " + id);
@@ -304,7 +304,6 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                         break;
                 }
                 portal.setPlugin(PortalForge.this);
-                portal.setType(PortalType.valueOf((String) row.get("type")));
                 portal.setId((Long)row.get("id")); //java.lang.Integer, if UNSIGNED java.lang.Long -- http://dev.mysql.com/doc/refman/5.0/en/connector-j-reference-type-conversions.html
                 portal.setActivation(PortalActivation.valueOf((String)row.get("activation")));
                 portal.setMessage((String)row.get("message"));
@@ -351,20 +350,31 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         return new Query("SELECT `portals`.* FROM `portals`,`portal_blocks` WHERE `portal_blocks`.`portal_id` = `portals`.`id` AND `portal_blocks`.`world` = ? AND `portal_blocks`.`x` = ? AND `portal_blocks`.`y` = ? AND `portal_blocks`.`z` = ? LIMIT 1") {
             @Override
             public void onFetchOne(HashMap row) {
-                BasePortal portal;
+                GenericPortal portal;
                 //Handle unknown portals here, since row == null if it is not in the DB
                 if(row == null){
-                    portal = new UnknownPortal();
-                    portal.setPlugin(PortalForge.this);
-                    portal.setPortalingEntity(entity); //Only set the entity, we don't know anything else
-                    portal.setType(PortalType.UNKNOWN);
-                    if(activation == PortalActivation.INSTANT){ //How this portal was activated
-                        portal.showDebug(); //Show debug on touch for all portals
-                        portal.onTouch();
-                    } else if (activation == PortalActivation.DELAYED){
-                        portal.onPortal();
+                    //Chedk to see if the block is a nether or end portal block
+                    Block block = entity.getWorld().getBlockAt(entity.getLocation());
+                    if(block.getType() == Material.ENDER_PORTAL){
+                        portal = new EndPortal();
+                        portal.setPlugin(PortalForge.this);
+                        portal.setActivation(PortalActivation.DELAYED); //Technically it's instant, but.. nether portals fire OnPlayerPortal which is DELAYED in our case
+                        portal.setPortalingEntity(entity);
+                        ((EndPortal)portal).createInDB(block);
+                    } else if (block.getType() == Material.PORTAL){
+                        portal = new NetherPortal();
+                    } else {
+                        portal = new UnknownPortal();
+                        portal.setPlugin(PortalForge.this);
+                        portal.setPortalingEntity(entity); //Only set the entity, we don't know anything else
+                        if(activation == PortalActivation.INSTANT){ //How this portal was activated
+                            portal.showDebug(); //Show debug on touch for all portals
+                            portal.onTouch();
+                        } else if (activation == PortalActivation.DELAYED){
+                            portal.onPortal();
+                        }
                     }
-                    return;
+                        return;
                 }
 
                 //Find out what type of portal it is, and set this portal type correctly
@@ -390,7 +400,6 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                 }
                 portal.setPlugin(PortalForge.this);
                 portal.setPortalingEntity(entity); //Only set the entity, we don't know anything else
-                portal.setType(PortalType.valueOf((String) row.get("type")));
                 portal.setId((Long) row.get("id")); //java.lang.Integer, if UNSIGNED java.lang.Long -- http://dev.mysql.com/doc/refman/5.0/en/connector-j-reference-type-conversions.html
                 portal.setActivation(PortalActivation.valueOf((String)row.get("activation")));
                 portal.setMessage((String)row.get("message"));
@@ -420,6 +429,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                     portal.onPortal(); //Call it!
                 }
             }
+
             @Override
             public void onException(Exception x, FinalQuery query) {
                 // rethrow
@@ -477,23 +487,24 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
     }
 
     
-    public void setPortalEnterLocation(final BasePortal portal){
-        Query query = new Query("SELECT * FROM `portal_blocks` WHERE `portal_id` = ? LIMIT 1") {
+    public void setPortalEnterLocation(final GenericPortal portal){
+        new Query("SELECT * FROM `portal_blocks` WHERE `portal_id` = ? LIMIT 1") {
             @Override
             public void onFetchOne(HashMap row) {
                 if(row != null){
+                    //Note, block Locations in this case are integers, not doubles
                     Location loc = new Location(
                             Bukkit.getWorld((String)row.get("world")),
-                            (Double)row.get("x"),
-                            (Double)row.get("y"),
-                            (Double)row.get("z")
+                            (Integer)row.get("x"),
+                            (Integer)row.get("y"),
+                            (Integer)row.get("z")
                     );
                     portal.setEnterLocation(loc);
                 }
             }
-        };
+        }.sync().fetchOne(portal.getId()).async();
     }
-    
+
     //Does a shared historical teleport
     public void doHistoricalTeleport(final Player player, final String worldName, final NetherPortal portal){
         //TODO: Make 30 SECOND interval configurable
@@ -546,7 +557,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         }
     }
     
-    private BasePortal constructPortalFromRow(HashMap row){
+    private GenericPortal constructPortalFromRow(HashMap row){
         //TODO, abstract the duplicate querying under diffetent conditions to this, returns a portal from a row of portal data
         return null;
     }
