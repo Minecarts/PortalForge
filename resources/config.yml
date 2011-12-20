@@ -21,3 +21,5 @@ world:
         new_highridge: world_the_end
         new_nether: world_the_end
         world_the_end: new_highridge
+db:
+    provider: minecarts

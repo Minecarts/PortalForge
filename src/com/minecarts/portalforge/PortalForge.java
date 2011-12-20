@@ -62,6 +62,10 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         getCommand("portal").setExecutor(new CommandRouter(this));
 
         log.info("[" + pdf.getName() + "] version " + pdf.getVersion() + " enabled.");
+
+        //Save the default config
+        getConfig().options().copyDefaults(true);
+        this.saveConfig();
     }
 
     public void onDisable(){
