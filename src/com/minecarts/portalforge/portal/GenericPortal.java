@@ -117,6 +117,11 @@ public class GenericPortal {
         teleportEntity(1);
     }
     public void teleportEntity(int delay){
+        if(!isExitSafe()){
+            getPortalingPlayer().sendMessage("The portal exit appears to be blocked");
+            getPlugin().log("Portal exit is blocked @ " + getExitLocation());
+            return;
+        }
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,new Runnable() {
             public void run() {
                 getPortalingEntity().teleport(getExitLocation());
@@ -124,6 +129,32 @@ public class GenericPortal {
                 postPortal();
             }
         },delay); //Teleport delay ticks later
+    }
+    
+//Check the exit location for any blockage
+    //TODO: Improve this logic to make it more.. robust, needs to take into account players getting stuck and dying
+    //TODO:  becuase a single block check wont get a player stuck with the push out of block code
+    public boolean isExitSafe(){
+        Block exitBlock = getExitLocation().getBlock();
+        switch(exitBlock.getType()){
+            case AIR:
+            case VINE:
+            case TORCH:
+            case WATER:
+            case STATIONARY_WATER:
+            case STONE_BUTTON:
+            case STONE_PLATE:
+            case WOOD_PLATE:
+            case DEAD_BUSH:
+            case LONG_GRASS:
+            case SIGN:
+            case SIGN_POST:
+            case SNOW:
+            case REDSTONE_TORCH_ON:
+            case REDSTONE_TORCH_OFF:
+                return true;
+        }
+        return false;
     }
 
 
