@@ -204,7 +204,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         new Query("UPDATE `portals` SET `dest_world` =?,`dest_x`=?,`dest_y`=?,`dest_z`=?,`dest_pitch`=?,`dest_yaw`=?, `dest_vel_x`=?, `dest_vel_y`=?, `dest_vel_z`=?,`type`=?,`activation`=?,`flags`=?,`message`=? WHERE `id`=? LIMIT 1") {
             @Override
             public void onAffected(Integer affected) {
-                logAndMessagePlayer(player, " updated " + affected + " portal with ID: " + portal.getId());
+                logAndMessagePlayer(player, "Updated " + affected + " portal with ID: " + portal.getId());
             }
             @Override
             public void onException(Exception x, FinalQuery query) {
