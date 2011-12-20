@@ -277,7 +277,12 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         new Query("DELETE FROM `portal_blocks` WHERE `portal_id` = ? AND world = ? AND x = ? AND y = ? AND z = ? LIMIT 1") {
             @Override
             public void onAffected(Integer affected) {
-                logAndMessagePlayer(player,"Removed block from field " + portal.getId());
+                if(affected > 0){
+                    logAndMessagePlayer(player,"Removed block from field " + portal.getId());
+                } else {
+                    logAndMessagePlayer(player,"Block does not belong to portal " + portal.getId());
+                    block.setType(Material.PORTAL); //Restore it back
+                }
             }
         }.affected(
                 portal.getId(),
@@ -344,7 +349,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                     );
                 }
                 setEditingPortal(player,portal);
-                logAndMessagePlayer(player, " started editing portal " + portal.getId());
+                logAndMessagePlayer(player, "Started editing portal " + portal.getId());
             }
             @Override
             public void onException(Exception x, FinalQuery query) {

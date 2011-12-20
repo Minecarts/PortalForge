@@ -1,5 +1,6 @@
 package com.minecarts.portalforge.portal;
 
+import com.minecarts.portalforge.portal.internal.PortalActivation;
 import com.minecarts.portalforge.portal.internal.PortalType;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -17,7 +18,16 @@ public class EndPortal extends GenericPortal {
         setType(PortalType.END);
     }
 
-    //EndPortals do not fire an EntityEnterPortalEvent (yet?), only an OnPlayerPortal
+    @Override
+    public void onTouch(){
+        //Normal end portals do not have an onTouch event, but it's possible
+        //to create a custom portal that has the type end.. so, lets just
+        //fire the onPortal event here.. but only if it's an instant portal
+        if(getActivation() == PortalActivation.INSTANT){
+            onPortal();
+        }
+    }
+
     @Override
     public void onPortal(){
         super.showDebug(); //End portals don't have an onTouch so lets force a debug to show
