@@ -78,7 +78,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
 
     class Query extends com.minecarts.dbquery.Query {
         public Query(String sql) {
-            super(PortalForge.this, dbq.getProvider("minecarts"), sql);
+            super(PortalForge.this, dbq.getProvider(getConfig().getString("db.provider")), sql);
         }
     }
 
