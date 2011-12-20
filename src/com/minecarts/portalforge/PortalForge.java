@@ -507,8 +507,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
 
     //Does a shared historical teleport
     public void doHistoricalTeleport(final Player player, final String worldName, final NetherPortal portal){
-        //TODO: Make 30 SECOND interval configurable
-        String queryString = "SELECT * FROM `portal_history` WHERE (`portal_id` = ? AND `timestamp` >= DATE_SUB(NOW(), INTERVAL 30 SECOND)) OR (`player` = ? AND `world` = ?) ORDER BY `timestamp` DESC LIMIT 1";
+        String queryString = "SELECT * FROM `portal_history` WHERE (`portal_id` = ? AND `timestamp` >= DATE_SUB(NOW(), INTERVAL "+getConfig().getInt("portal.shared_cooldown",30)+" SECOND)) OR (`player` = ? AND `world` = ?) ORDER BY `timestamp` DESC LIMIT 1";
 
         if(portal.containsFlag(PortalFlag.NO_SHARED_PORTALING)){
             queryString = "SELECT * FROM `portal_history` WHERE (`player` = ? AND `world` = ?) LIMIT 1";

@@ -7,6 +7,7 @@ messages:
 portal:
     touch_timeout: 3
     portal_timeout: 3
+    shared_cooldown: 30
 world:
     nether:
         world: world_nether
