@@ -2,6 +2,7 @@ package com.minecarts.portalforge.portal;
 
 
 import com.minecarts.portalforge.portal.internal.PortalType;
+import org.bukkit.ChatColor;
 
 public class UnknownPortal extends GenericPortal {
 
@@ -12,7 +13,7 @@ public class UnknownPortal extends GenericPortal {
     @Override
     public void showDebug(){
         if(portalingEntityIsPlayer()){
-            getPortalingPlayer().sendMessage("Touched an unknown portal (not in DB)");
+            getPortalingPlayer().sendMessage(ChatColor.DARK_GRAY + "Touched an unknown portal (not in DB)");
         }
     }
 

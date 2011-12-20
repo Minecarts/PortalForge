@@ -25,7 +25,6 @@ public class NetherPortal extends GenericPortal {
     }
     @Override
     public void onPortal(){
-        System.out.println(getPortalingPlayer() + " used NETHER portal " + getId());
         String targetWorldName = getPlugin().getConfig().getString("world.nether." + getPortalingEntity().getWorld().getName(),"world");
 
         //Only players can use a NetherPortal

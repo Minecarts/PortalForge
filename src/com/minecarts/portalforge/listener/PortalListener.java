@@ -21,6 +21,13 @@ public class PortalListener extends CustomEventListener{
             if(e.isCancelled()) return;
 
             GenericPortal portal = e.getPortal();
+
+            if(portal.portalingEntityIsPlayer()){
+                plugin.log(portal.getPortalingPlayer().getName() + " used " + portal.getType().name() + " portal " + portal.getId());
+            } else {
+                plugin.log(portal.getPortalingEntity().getClass().getName() + " used " + portal.getType().name() + " portal " + portal.getId());
+            }
+
             portal.teleportEntity();
         }
     }

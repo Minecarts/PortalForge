@@ -5,10 +5,7 @@ import com.minecarts.portalforge.event.PortalSuccessEvent;
 import com.minecarts.portalforge.portal.internal.PortalActivation;
 import com.minecarts.portalforge.portal.internal.PortalFlag;
 import com.minecarts.portalforge.portal.internal.PortalType;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -80,7 +77,7 @@ public class GenericPortal {
     
     public void showDebug(){
         if(portalingEntityIsPlayer() && getPortalingPlayer().hasPermission("portalforge.debug")){
-            getPortalingPlayer().sendMessage("Touched portal: " + getId());
+            getPortalingPlayer().sendMessage(ChatColor.DARK_GRAY + "Touched portal: " + getId());
         }
     }
     
