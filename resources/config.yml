@@ -7,3 +7,16 @@ messages:
 portal:
     touch_timeout: 3
     portal_timeout: 3
+world:
+    nether:
+        world: world_nether
+        world_nether: world
+        new_highridge: new_nether
+        new_nether: new_highridge
+        world_the_end: new_highridge
+    end:
+        world: world_the_end
+        world_nether: world_the_end
+        new_highridge: world_the_end
+        new_nether: world_the_end
+        world_the_end: new_highridge

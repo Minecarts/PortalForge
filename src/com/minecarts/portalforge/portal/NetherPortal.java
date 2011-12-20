@@ -26,18 +26,11 @@ public class NetherPortal extends GenericPortal {
     @Override
     public void onPortal(){
         System.out.println(getPortalingPlayer() + " used NETHER portal " + getId());
-        String entityWorld = getPortalingEntity().getWorld().getName();
-        //TODO: Make this configurable / database driven
-        String targetWorld = "world";
-        if(entityWorld.equals("world")){
-            targetWorld = "world_nether";
-        } else {
-            targetWorld = "world";
-        }
+        String targetWorldName = getPlugin().getConfig().getString("world.nether." + getPortalingEntity().getWorld().getName(),"world");
 
         //Only players can use a NetherPortal
         if(portalingEntityIsPlayer()){
-            getPlugin().doHistoricalTeleport(getPortalingPlayer(), targetWorld, this);
+            getPlugin().doHistoricalTeleport(getPortalingPlayer(), targetWorldName, this);
         } else {
             super.onPortal(); //Portal the entity immediately, TODO: Might break shit.
         }

@@ -22,12 +22,10 @@ public class EndPortal extends GenericPortal {
     public void onPortal(){
         super.showDebug(); //End portals don't have an onTouch so lets force a debug to show
 
-        //TODO, make these worlds a config option
-        if(getPortalingEntity().getWorld().getName().equals("world_the_end")){
-            setExitLocation(Bukkit.getWorld("world").getSpawnLocation()); //Send them back
-        } else {
-            setExitLocation(Bukkit.getWorld("world_the_end").getSpawnLocation());
-        }
+        //Get the corresponding world name from the config
+        String targetWorldName = getPlugin().getConfig().getString("world.end." + getPortalingEntity().getWorld().getName(),"world");
+        setExitLocation(Bukkit.getWorld(targetWorldName).getSpawnLocation()); //Send them back
+
         super.onPortal(); //Fires the event and checks flags
     }
 
