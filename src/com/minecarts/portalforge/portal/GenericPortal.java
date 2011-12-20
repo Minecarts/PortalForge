@@ -234,6 +234,7 @@ public class GenericPortal {
         this.flags = flags;
     }
     public ArrayList<PortalFlag> getFlags(){
+        if(this.flags.size() == 0) return null;
         return this.flags;
     }
     public boolean containsFlag(PortalFlag flag){
