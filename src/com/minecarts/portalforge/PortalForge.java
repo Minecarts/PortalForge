@@ -269,6 +269,20 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
             log(player.getName() + " is not editing a portal yet tried to add a block to a field");
         }
     }
+    public void removeBlockFromPortal(final Player player, final GenericPortal portal, final Block block){
+        new Query("DELETE FROM `portal_blocks` WHERE `portal_id` = ? AND world = ? AND x = ? AND y = ? AND z = ? LIMIT 1") {
+            @Override
+            public void onAffected(Integer affected) {
+                logAndMessagePlayer(player,"Removed block from field " + portal.getId());
+            }
+        }.affected(
+                portal.getId(),
+                block.getLocation().getWorld().getName(),
+                block.getLocation().getBlockX(),
+                block.getLocation().getBlockY(),
+                block.getLocation().getBlockZ()
+        );
+    }
 
 
     public void setEditingPortalFromId(final Player player, final Integer id){

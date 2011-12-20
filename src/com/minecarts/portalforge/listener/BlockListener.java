@@ -1,5 +1,6 @@
 package com.minecarts.portalforge.listener;
 
+import com.minecarts.portalforge.portal.GenericPortal;
 import com.minecarts.portalforge.portal.NetherPortal;
 import com.minecarts.portalforge.portal.internal.PortalActivation;
 import com.minecarts.portalforge.portal.internal.PortalType;
@@ -31,9 +32,6 @@ public class BlockListener extends org.bukkit.event.block.BlockListener{
                     NetherPortal portal = new NetherPortal();
                     portal.setActivation(PortalActivation.DELAYED);
                     plugin.createPortal(player,portal,e.getBlock());
-                    //Get the block
-                    
-                    //Call the netheRPortal detection function
                 }
             }
         }
@@ -58,7 +56,13 @@ public class BlockListener extends org.bukkit.event.block.BlockListener{
     @Override
     public void onBlockBreak(BlockBreakEvent e){
         if(e.getBlock().getType() == Material.PORTAL || e.getBlock().getType() == Material.ENDER_PORTAL){
-            e.setCancelled(true);
+            GenericPortal portal = plugin.getEditingPortal(e.getPlayer());
+            if(portal != null){
+                //Remove this block from the field
+                plugin.removeBlockFromPortal(e.getPlayer(),portal,e.getBlock());
+            } else {
+                e.setCancelled(true); //Otherwise portal blocks cannot be broken
+            }
         }
     }
 }
