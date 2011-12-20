@@ -60,7 +60,7 @@ public class EndPortal extends GenericPortal {
             public void run() {
                 getPlugin().clearEditingPortal(getPortalingPlayer()); //Portal has been created
             }
-        },20 * 5); //TODO: Make configurable
+        },20 * getPlugin().getConfig().getInt("portal.auto_edit_clear",5));
     }
 
     private void findNearbyPortalBlocksHorizontal(Block block){
