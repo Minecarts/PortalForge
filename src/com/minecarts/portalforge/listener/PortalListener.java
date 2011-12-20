@@ -16,7 +16,7 @@ public class PortalListener extends CustomEventListener{
 
     @Override
     public void onCustomEvent(Event event){
-        if(event.getEventName() == "PortalSuccessEvent"){
+        if(event.getEventName().equals("PortalSuccessEvent")){
             PortalSuccessEvent e = (PortalSuccessEvent) event;
             if(e.isCancelled()) return;
 
