@@ -397,7 +397,7 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                             portal.onPortal();
                         }
                     }
-                        return;
+                    return;
                 }
 
                 //Find out what type of portal it is, and set this portal type correctly
