@@ -69,7 +69,7 @@ public class EndPortal extends GenericPortal {
             if(foundBlocks.contains(relativeBlock)) continue;
             if(relativeBlock.getType() == Material.ENDER_PORTAL){
                 foundBlocks.add(relativeBlock);
-                getPlugin().addBlockToPortal(getPortalingPlayer(),relativeBlock.getLocation());
+                getPlugin().addBlockToPortal(getPortalingPlayer(),relativeBlock.getLocation(),true);
                 findNearbyPortalBlocksHorizontal(relativeBlock);
             }
         }
