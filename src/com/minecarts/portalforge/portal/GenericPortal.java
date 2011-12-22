@@ -152,6 +152,8 @@ public class GenericPortal {
             case SNOW:
             case REDSTONE_TORCH_ON:
             case REDSTONE_TORCH_OFF:
+            case PORTAL:
+            case ENDER_PORTAL:
                 return true;
         }
         return false;
