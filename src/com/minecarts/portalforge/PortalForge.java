@@ -84,6 +84,19 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
         public Query(String sql) {
             super(PortalForge.this, dbq.getProvider(getConfig().getString("db.provider")), sql);
         }
+        @Override
+        public void onComplete(FinalQuery query) {
+            if(query.elapsed() > 500) {
+                log(MessageFormat.format("Slow query took {0,number,#} ms", query.elapsed()));
+            }
+        }
+        @Override
+        public void onException(Exception x, FinalQuery query) {
+            try { throw x; }
+            catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void entityPortalingAdd(Entity e, PortalActivation type){
@@ -184,16 +197,6 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                 //  pre-existing portals such as nether and end portals
                 portal.portalCreated(player,block);
             }
-            @Override
-            public void onException(Exception x, FinalQuery query) {
-                // rethrow
-                try {
-                    throw x;
-                }
-                catch(Exception e) {
-                    e.printStackTrace();
-                }
-            }
         }.insertId(
                 portal.getType().name(),
                 portal.getActivation().name()
@@ -205,16 +208,6 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
             @Override
             public void onAffected(Integer affected) {
                 logAndMessagePlayer(player, "Updated " + affected + " portal with ID: " + portal.getId());
-            }
-            @Override
-            public void onException(Exception x, FinalQuery query) {
-                // rethrow
-                try {
-                    throw x;
-                }
-                catch(Exception e) {
-                    e.printStackTrace();
-                }
             }
         }.affected(
                 portal.getExitLocation().getWorld().getName(),
@@ -250,16 +243,6 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                                 getEditingPortal(player).getId(),
                                 blockLocation.getWorld().getName()
                         ));
-                    }
-                }
-                @Override
-                public void onException(Exception x, FinalQuery query) {
-                    // rethrow
-                    try {
-                        throw x;
-                    }
-                    catch(Exception e) {
-                        e.printStackTrace();
                     }
                 }
             }.insertId(
@@ -351,19 +334,6 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                 setEditingPortal(player,portal);
                 logAndMessagePlayer(player, "Started editing portal " + portal.getId());
             }
-            @Override
-            public void onException(Exception x, FinalQuery query) {
-                // rethrow
-                try {
-                    throw x;
-                }
-                catch(Exception e) {
-                    e.printStackTrace();
-
-                    // retry query
-                    //query.run();
-                }
-            }
         }.fetchOne(id);
     }
     
@@ -452,20 +422,6 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                     portal.onPortal(); //Call it!
                 }
             }
-
-            @Override
-            public void onException(Exception x, FinalQuery query) {
-                // rethrow
-                try {
-                    throw x;
-                }
-                catch(Exception e) {
-                    e.printStackTrace();
-
-                    // retry query
-                    //query.run();
-                }
-            }
         };
     }
 
@@ -475,16 +431,6 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
             @Override
             public void onAffected(Integer affected) {
 
-            }
-            @Override
-            public void onException(Exception x, FinalQuery query) {
-                // rethrow
-                try {
-                    throw x;
-                }
-                catch(Exception e) {
-                    e.printStackTrace();
-                }
             }
         }.affected(
                 player.getName(),
@@ -559,16 +505,6 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                             (Double)row.get("dest_z")
                     );
                     portal.sharedTeleport((String)row.get("player"),loc);
-                }
-            }
-            @Override
-            public void onException(Exception x, FinalQuery query) {
-                // rethrow
-                try {
-                    throw x;
-                }
-                catch(Exception e) {
-                    e.printStackTrace();
                 }
             }
         };
