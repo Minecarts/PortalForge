@@ -10,7 +10,6 @@ public class PortalDone {
             player.sendMessage("You're currently not editing a portal.");
             return true;
         }
-        plugin.logAndMessagePlayer(player, "Finished editing portal " + plugin.getEditingPortal(player).getId());
         plugin.clearEditingPortal(player);
         return true;
     }

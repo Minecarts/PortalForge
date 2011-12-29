@@ -173,14 +173,20 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
 
 
 
-    public void setEditingPortal(final Player player, GenericPortal portal){
+    public void setEditingPortal(Player player, GenericPortal portal){
         portalEditingMap.put(player,portal);
+        if(player.hasPermission("portalforge.debug")){
+            logAndMessagePlayer(player, "Started editing portal " + portal.getId());
+        }
     }
     public GenericPortal getEditingPortal(final Player player){
         return portalEditingMap.get(player);
     }
-    public void clearEditingPortal(final Player player){
-        portalEditingMap.remove(player);
+    public void clearEditingPortal(Player player){
+        GenericPortal portal = portalEditingMap.remove(player);
+        if(player.hasPermission("portalforge.debug") && portal != null){
+            logAndMessagePlayer(player, "Finished editing portal " + portal.getId());
+        }
     }
 
     public void createPortal(final Player player, final GenericPortal portal){
@@ -336,9 +342,6 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                     );
                 }
                 setEditingPortal(player,portal);
-                if(player.hasPermission("portalforge.debug")){
-                    logAndMessagePlayer(player, "Started editing portal " + portal.getId());
-                }
             }
         }.sync().fetchOne(id);
     }
