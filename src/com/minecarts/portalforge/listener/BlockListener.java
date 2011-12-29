@@ -79,7 +79,10 @@ public class BlockListener extends org.bukkit.event.block.BlockListener{
                     plugin.editPortalFromBlock(e.getPlayer(),checkBlock);
                     GenericPortal portal = plugin.getEditingPortal(player);
 
-                    if(portal.getType() != PortalType.NETHER) return; //Safety check, only remove nether portals
+                    if(portal.getType() != PortalType.NETHER){
+                        plugin.clearEditingPortal(player); //This player is done, clear the editing
+                        return; //Safety check, only remove nether portals
+                    }
 
                     plugin.getAllBlocksFromPortal(e.getPlayer(),portal); //Find all the blocks in this portla
 
