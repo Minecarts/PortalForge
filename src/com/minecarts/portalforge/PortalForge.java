@@ -261,9 +261,13 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
             @Override
             public void onAffected(Integer affected) {
                 if(affected > 0){
-                    logAndMessagePlayer(player,"Removed block from field " + portal.getId());
+                    if(player.hasPermission("portalforge.debug")){
+                        logAndMessagePlayer(player,"Removed block from field " + portal.getId());
+                    }
                 } else {
-                    logAndMessagePlayer(player,"Block does not belong to portal " + portal.getId());
+                    if(player.hasPermission("portalforge.debug")){
+                        logAndMessagePlayer(player,"Block does not belong to portal " + portal.getId());
+                    }
                     block.setType(Material.PORTAL); //Restore it back
                 }
             }
@@ -332,12 +336,47 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
                     );
                 }
                 setEditingPortal(player,portal);
-                logAndMessagePlayer(player, "Started editing portal " + portal.getId());
+                if(player.hasPermission("portalforge.debug")){
+                    logAndMessagePlayer(player, "Started editing portal " + portal.getId());
+                }
             }
-        }.fetchOne(id);
+        }.sync().fetchOne(id);
     }
     
-        
+    
+    public void editPortalFromBlock(final Player player, final Block block){
+        new Query("SELECT `portal_id` FROM `portal_blocks` WHERE `world` = ? AND `x` = ? AND `y` = ? AND `z` = ? LIMIT 1"){
+            @Override
+            public void onFetchOne(HashMap row){
+                if(row == null){
+                    logAndMessagePlayer(player,"Unable to remove nether portal, can't find it in the database. @ " + block.getLocation());
+                    return;
+                }
+                PortalForge.this.setEditingPortalFromId(player,(Integer)row.get("portal_id"));
+            }
+        }.sync().fetchOne(block.getWorld().getName(),
+                block.getX(),
+                block.getY(),
+                block.getZ());
+    }
+
+
+    public void getAllBlocksFromPortal(final Player player, final GenericPortal portal){
+        new Query("SELECT * FROM `portal_blocks` WHERE `portal_id` = ?") {
+            @Override
+            public void onFetch(ArrayList<HashMap> rows){
+                if(rows == null) return;
+                for(HashMap row : rows){
+                    Location loc = new Location(
+                            Bukkit.getWorld((String)row.get("world")),
+                            (Integer)row.get("x"),
+                            (Integer)row.get("y"),
+                            (Integer)row.get("z"));
+                    portal.addBlock(loc.getWorld().getBlockAt(loc));
+                }
+            }
+        }.sync().fetch(portal.getId());
+    }
 
     public Query getQuery(final Entity entity, final PortalActivation activation){
         return new Query("SELECT `portals`.* FROM `portals`,`portal_blocks` WHERE `portal_blocks`.`portal_id` = `portals`.`id` AND `portal_blocks`.`world` = ? AND `portal_blocks`.`x` = ? AND `portal_blocks`.`y` = ? AND `portal_blocks`.`z` = ? LIMIT 1") {

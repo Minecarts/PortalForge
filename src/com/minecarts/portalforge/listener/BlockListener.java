@@ -5,6 +5,8 @@ import com.minecarts.portalforge.portal.NetherPortal;
 import com.minecarts.portalforge.portal.internal.PortalActivation;
 import com.minecarts.portalforge.portal.internal.PortalType;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockFromToEvent;
@@ -14,6 +16,7 @@ import com.minecarts.portalforge.PortalForge;
 
 public class BlockListener extends org.bukkit.event.block.BlockListener{
     private PortalForge plugin;
+    private BlockFace[] faces = {BlockFace.NORTH,BlockFace.EAST,BlockFace.SOUTH,BlockFace.WEST, BlockFace.DOWN, BlockFace.UP};
     public BlockListener(PortalForge plugin){
         this.plugin = plugin;
     }
@@ -62,6 +65,32 @@ public class BlockListener extends org.bukkit.event.block.BlockListener{
                 plugin.removeBlockFromPortal(e.getPlayer(),portal,e.getBlock());
             } else {
                 e.setCancelled(true); //Otherwise portal blocks cannot be broken
+            }
+            return;
+        }
+        
+        
+        if(e.getBlock().getType() == Material.OBSIDIAN){
+            for(BlockFace face : faces){
+                Block checkBlock = e.getBlock().getRelative(face);
+                if(checkBlock.getType() == Material.PORTAL){
+                    Player player = e.getPlayer();
+                    //We found a portal block,
+                    plugin.editPortalFromBlock(e.getPlayer(),checkBlock);
+                    GenericPortal portal = plugin.getEditingPortal(player);
+
+                    if(portal.getType() != PortalType.NETHER) return; //Safety check, only remove nether portals
+
+                    plugin.getAllBlocksFromPortal(e.getPlayer(),portal); //Find all the blocks in this portla
+
+                    for(Block block : portal.getBlocks()){
+                        plugin.removeBlockFromPortal(e.getPlayer(),portal,block); //And remove them
+                        block.setType(Material.AIR);
+                    }
+
+                    plugin.clearEditingPortal(player); //This player is done, clear the editing
+                    break; //Stop looping, we're done
+                }
             }
         }
     }

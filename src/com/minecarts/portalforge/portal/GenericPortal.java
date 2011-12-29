@@ -25,6 +25,7 @@ public class GenericPortal {
     private Vector exitVector = new Vector(0,0,0);
     private String message;
     private Long id;
+    private ArrayList<Block> blocks = new ArrayList<Block>();
 
     public GenericPortal(){
         setType(PortalType.GENERIC);
@@ -175,6 +176,14 @@ public class GenericPortal {
         return this.message;
     }
     
+    public void addBlock(Block block){
+        if(!blocks.contains(block)){
+            blocks.add(block);
+        }
+    }
+    public ArrayList<Block> getBlocks(){
+        return blocks;
+    }
     
     public void setEnterLocation(Location loc){
         if(loc == null) return;

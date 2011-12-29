@@ -78,4 +78,11 @@ public class NetherPortal extends GenericPortal {
             getPlugin().addBlockToPortal(player, location, true); //ADd the blocks to the field silently
         }
     }
+
+    private void removeNearbyBlocks(Player player, Block block){
+        for(int i=0; i<3; i++){
+            Location location = new Location(block.getWorld(),block.getX(),block.getY()+i,block.getZ());
+            getPlugin().addBlockToPortal(player, location, true); //ADd the blocks to the field silently
+        }
+    }
 }
