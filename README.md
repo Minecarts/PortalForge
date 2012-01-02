@@ -1,36 +1,60 @@
-##Configuring Ant in Eclipse for build.xml
-I've included a quick little build.xml file. In order to use this, you'll need to set two properties in eclipse.
+## Prerequisites
+[DBQuery](https://github.com/Minecarts/DBQuery) and [DBConnector](https://github.com/Minecarts/DBConnector) configured with a MySQL server and database with the following tables:
 
--  Go to: Window -> Preferences -> Ant -> Runtime -> Properties (tab)
+```sql
+CREATE TABLE `portal_blocks` ( 
+  `portal_id` int(11) NOT NULL, 
+  `world` char(32) NOT NULL, 
+  `x` int(11) NOT NULL, 
+  `y` int(11) NOT NULL, 
+  `z` int(11) NOT NULL, 
+  PRIMARY KEY (`portal_id`,`world`,`x`,`y`,`z`) 
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+```
 
-Now, you'll need to either add the following properties to the global properties:
+```sql
+CREATE TABLE `portals` ( 
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT, 
+  `dest_world` char(32) DEFAULT NULL, 
+  `dest_x` double(7,3) DEFAULT NULL, 
+  `dest_y` double(7,3) DEFAULT NULL, 
+  `dest_z` double(7,3) DEFAULT NULL, 
+  `dest_pitch` float DEFAULT NULL, 
+  `dest_yaw` float DEFAULT NULL, 
+  `REMOVE_dest_vel` float DEFAULT '0', 
+  `dest_vel_x` float DEFAULT '0', 
+  `dest_vel_y` float DEFAULT '0', 
+  `dest_vel_z` float DEFAULT '0', 
+  `type` enum('NETHER','HOME','GENERIC','SKYLAND','END') NOT NULL DEFAULT 'NETHER', 
+  `activation` enum('INSTANT','DELAYED') NOT NULL DEFAULT 'INSTANT', 
+  `flags` set('CLEAR_INVENTORY','REQUIRE_EMPTY_INVENTORY','MESSAGE','SUBSCRIBER','MODE_CREATIVE','MODE_SURVIVAL','NO_SHARED_PORTALING') DEFAULT NULL, 
+  `message` varchar(255) DEFAULT NULL, 
+  `note` varchar(50) DEFAULT NULL, 
+  PRIMARY KEY (`id`), 
+  KEY `lookup` (`dest_world`,`dest_x`,`dest_y`,`dest_z`), 
+  KEY `type` (`type`) 
+) ENGINE=MyISAM AUTO_INCREMENT=685 DEFAULT CHARSET=utf8;
+```
 
-    Name: bukkit.jar 
-    Value: /path/to/bukkit.jar
+```sql
+CREATE TABLE `portal_history` ( 
+  `player` char(32) NOT NULL, 
+  `world` char(32) NOT NULL, 
+  `x` double(7,3) NOT NULL, 
+  `y` double(7,3) NOT NULL, 
+  `z` double(7,3) NOT NULL, 
+  `portal_id` int(11) DEFAULT NULL, 
+  `timestamp` datetime DEFAULT NULL, 
+  `dest_world` char(32) NOT NULL DEFAULT '', 
+  `dest_x` double(7,3) NOT NULL DEFAULT '0.000', 
+  `dest_y` double(7,3) NOT NULL DEFAULT '0.000', 
+  `dest_z` double(7,3) NOT NULL DEFAULT '0.000', 
+  PRIMARY KEY (`player`,`world`) 
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+```
 
-    Name: minecraft.dir
-    Value: /path/to/minecraft/server/root
-
-Or, you can add the following content to a file, and import it under the "Global property files" section:
-
-    bukkit.jar=C:/dev/Minecraft/Bukkit/Bukkit/target/bukkit-0.0.1-SNAPSHOT.jar
-    minecraft.dir=C:/Minecraft
-  
-##Using this template in Eclipse
-
-1.  Assuming you have eGit installed; File, Import, Git -> Project from Git
-2.  Clone this repo into your development folder (remeber project source and git source must be in the same directory) (Example Destination: C:\dev\Eclipse\MyPlugin)
-3.  Click next and select "Use the New Projects Wizard" and click Finish
-4.  Select Java -> Java Project and click Next
-5.  Project Name should match the one in step 2 (MyPlugin), and the location should match as well (C:\dev\Eclipse).
-    
-    If you did this correctly, you should see "The wizard will automatically configure the JRE and the project layout based on the existing source"
-
-6.  Click finish to create your project
-7.  Add the bukkit jar to your build path and rename all the "templateplugin" instances. Some spots you will need to rename are:
-     -  com.minecarts.__templateplugin__.*
-     -  com.minecarts.__templateplugin__.__TemplatePlugin__.java
-     -  plugin.yml
- 
-*The build.xml file should automatically detect the plugin name*
-
+## Usage
+* `/portal create` creates a new portal in the database and starts an editing session for this portal. Place portal blocks to add them to the portal.
+* `/portal edit [ID#]` starts a portal editing session where `ID#` is the portal ID from the database and console debug messages.
+* `/portal exit` sets the portal desintation to exactly your current x, y, z, pitch, and yaw.
+* `/portal done` ends a portal editing session.
