@@ -1,5 +1,5 @@
 ## Download
-Fresh `.jar`s of the latest and past versions may be available for download at [our artifactory](http://ci.jazer.com/).
+Fresh `.jar`s of the latest and past versions may be available for download at [our CI](http://ci.jazer.com/).
 
 ## Prerequisites
 [DBQuery](https://github.com/Minecarts/DBQuery) and [DBConnector](https://github.com/Minecarts/DBConnector) configured with a MySQL server and database with the following tables:
