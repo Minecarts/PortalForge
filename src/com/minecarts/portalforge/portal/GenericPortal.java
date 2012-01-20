@@ -63,6 +63,10 @@ public class GenericPortal {
             Player p = getPortalingPlayer();
             if(containsFlag(PortalFlag.CLEAR_INVENTORY)){
                 p.getInventory().clear();
+                p.getInventory().setBoots(null);
+                p.getInventory().setHelmet(null);
+                p.getInventory().setLeggings(null);
+                p.getInventory().setChestplate(null);
             }
             if(containsFlag(PortalFlag.MESSAGE)){
                 p.sendMessage(getMessage());
@@ -94,6 +98,14 @@ public class GenericPortal {
             Player player = getPortalingPlayer();
 
             if(containsFlag(PortalFlag.REQUIRE_EMPTY_INVENTORY)){
+                //Check the armor
+                for(ItemStack stack : player.getInventory().getArmorContents()){
+                    if(stack != null && stack.getTypeId() != 0){
+                        player.sendMessage(getPlugin().getConfig().getString("messages.REQUIRE_EMPTY_INVENTORY"));
+                        return false;
+                    }
+                }
+                //Check the inventory
                 for(ItemStack stack : player.getInventory().getContents()){
                     if(stack != null && stack.getTypeId() != 0){
                         player.sendMessage(getPlugin().getConfig().getString("messages.REQUIRE_EMPTY_INVENTORY"));
