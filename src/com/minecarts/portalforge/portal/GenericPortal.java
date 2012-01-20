@@ -205,7 +205,6 @@ public class GenericPortal {
         return this.exitLocation;
     }
     public Location getSafeExitLocation(){
-        //TODO: Find a safe exit point..
         //Search for any air blocks around the exit point
         for(int xOffset=-2; xOffset <= 2; xOffset++){
             for(int zOffset=-2; zOffset <= 2; zOffset++){

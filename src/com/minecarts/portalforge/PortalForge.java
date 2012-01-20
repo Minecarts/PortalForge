@@ -24,6 +24,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.event.*;
 
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
     public final Logger log = Logger.getLogger("com.minecarts.portalforge");
@@ -168,7 +169,22 @@ public class PortalForge extends org.bukkit.plugin.java.JavaPlugin{
 
     public Location getNearestPortalBlock(Entity e){
         //TODO: Search for the nearest portal block and return it's location, not sure if it's necessary
-        return e.getLocation();
+        if(e.getLocation().getBlock().getType() == Material.PORTAL){
+            return e.getLocation();
+        }
+        //Attempt to find the nearest portal block
+        Location entityLocation = e.getLocation();
+        for(int xOffset=-2; xOffset <= 2; xOffset++){
+            for(int zOffset=-2; zOffset <= 2; zOffset++){
+                for(int yOffset=0; yOffset <= 2; yOffset++){
+                    Location testLoc = new Location(entityLocation.getWorld(),entityLocation.getX() + xOffset, entityLocation.getY() + yOffset, entityLocation.getZ() + zOffset);
+                    if(testLoc.getBlock().getType() == Material.PORTAL || testLoc.getBlock().getType() == Material.ENDER_PORTAL){
+                        return testLoc;
+                    }
+                }
+            }
+        }
+        return e.getLocation(); //Otherwise if we couldn't find it, just return the entity location
     }
 
 
