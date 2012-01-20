@@ -285,7 +285,7 @@ public class GenericPortal {
 
 
     public void setFlags(String flags){
-        if(flags == null) return;
+        if(flags == null || flags.equals("")) return;
         if(this.flags == null){
             this.flags = new ArrayList<PortalFlag>();
         }
