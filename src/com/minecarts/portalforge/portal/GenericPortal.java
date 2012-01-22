@@ -130,14 +130,15 @@ public class GenericPortal {
         teleportEntity(1);
     }
     public void teleportEntity(int delay){
-        if(!isExitSafe()){
+        final Location exitLocation = getSafeExitLocation();
+        if(exitLocation == null){
             getPortalingPlayer().sendMessage("The portal exit appears to be blocked");
             getPlugin().log("Portal exit is blocked @ " + getExitLocation());
             return;
         }
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,new Runnable() {
             public void run() {
-                getPortalingEntity().teleport(getSafeExitLocation());
+                getPortalingEntity().teleport(exitLocation);
                 getPortalingEntity().setVelocity(getExitVector());
                 postPortal();
             }
@@ -147,8 +148,8 @@ public class GenericPortal {
 //Check the exit location for any blockage
     //TODO: Improve this logic to make it more.. robust, needs to take into account players getting stuck and dying
     //TODO:  becuase a single block check wont get a player stuck with the push out of block code
-    public boolean isExitSafe(){
-        Block exitBlock = getExitLocation().getBlock();
+    public boolean isLocationEmpty(Location location){
+        Block exitBlock = location.getBlock();
         switch(exitBlock.getType()){
             case AIR:
             case VINE:
@@ -165,8 +166,8 @@ public class GenericPortal {
             case SNOW:
             case REDSTONE_TORCH_ON:
             case REDSTONE_TORCH_OFF:
-            case PORTAL:
-            case ENDER_PORTAL:
+            //case PORTAL:
+            //case ENDER_PORTAL:
                 return true;
         }
         return false;
@@ -217,17 +218,21 @@ public class GenericPortal {
         return this.exitLocation;
     }
     public Location getSafeExitLocation(){
+        //Check the exact exit point
+        if(isLocationEmpty(this.exitLocation)){
+            return this.exitLocation;
+        }
+
         //Search for any air blocks around the exit point
-        for(int xOffset=-2; xOffset <= 2; xOffset++){
-            for(int zOffset=-2; zOffset <= 2; zOffset++){
-                Location testLoc = new Location(this.exitLocation.getWorld(), this.exitLocation.getBlockX() + xOffset, this.exitLocation.getBlockY(), this.exitLocation.getBlockZ() + zOffset);
-                if(this.exitLocation.getWorld().getBlockAt(testLoc).getType() == Material.AIR
-                    && this.exitLocation.getWorld().getBlockAt(testLoc.add(new Vector(0,1,0))).getType() == Material.AIR){
-                    return testLoc.subtract(new Vector(0.5,0,0.5)); //Substract 0.5 from the loc to get the midpoint of the block
+        for(int xOffset=-1; xOffset <= 1; xOffset++){
+            for(int zOffset=-1; zOffset <= 1; zOffset++){
+                Location testLoc = new Location(this.exitLocation.getWorld(), this.exitLocation.getBlockX() + xOffset, this.exitLocation.getBlockY(), this.exitLocation.getBlockZ() + zOffset).subtract(new Vector(0.5,0,0.5)); //Substract 0.5 from the loc to get the midpoint of the block
+                if(isLocationEmpty(testLoc) && isLocationEmpty(new Location(testLoc.getWorld(),testLoc.getX(), testLoc.getY() + 1, testLoc.getZ()))){
+                    return testLoc;
                 }
             }
         }
-        return this.exitLocation;
+        return null;
     }
     
     public void setExitVector(Vector v){
