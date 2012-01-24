@@ -229,16 +229,18 @@ public class GenericPortal {
         }
 
         //Search for any air blocks around the exit point
-        for(int xOffset=-1; xOffset <= 1; xOffset++){
-            for(int zOffset=-1; zOffset <= 1; zOffset++){
-                Location testLoc = new Location(this.exitLocation.getWorld(), this.exitLocation.getBlockX() + xOffset, this.exitLocation.getBlockY(), this.exitLocation.getBlockZ() + zOffset).subtract(new Vector(0.5,0,0.5)); //Substract 0.5 from the loc to get the midpoint of the block
+        for(int xOffset=-2; xOffset <= 2; xOffset++){
+            for(int zOffset=-2; zOffset <= 2; zOffset++){
+                Location testLoc = new Location(this.exitLocation.getWorld(), this.exitLocation.getBlockX() + xOffset, this.exitLocation.getBlockY(), this.exitLocation.getBlockZ() + zOffset).add(new Vector(0.5,0,0.5)); //Substract 0.5 from the loc to get the midpoint of the block
                 if(plugin.getConfig().getBoolean("debug")){
                     plugin.log("Checking: " + testLoc);
                     plugin.log("\tFound y: " + testLoc.getBlock().getType());
                     plugin.log("\tFound y+1: " + (new Location(testLoc.getWorld(),testLoc.getX(), testLoc.getY() + 1, testLoc.getZ())).getBlock().getType());
                 }
                 if(isLocationEmpty(testLoc) && isLocationEmpty(new Location(testLoc.getWorld(),testLoc.getX(), testLoc.getY() + 1, testLoc.getZ()))){
-                    plugin.log("\tSafe location found: " + testLoc);
+                    if(plugin.getConfig().getBoolean("debug")){
+                        plugin.log("\tSafe location found: " + testLoc);
+                    }
                     return testLoc;
                 }
             }
