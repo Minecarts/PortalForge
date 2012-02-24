@@ -220,7 +220,9 @@ public class GenericPortal {
     public Location getSafeExitLocation(){
         //Check the exact exit point
         if(isLocationEmpty(this.exitLocation)){
-            plugin.log("Exact location was safe: " + this.exitLocation);
+            if(plugin.getConfig().getBoolean("debug")){
+                plugin.log("Exact location was safe: " + this.exitLocation);
+            }
             return this.exitLocation;
         } else {
             if(plugin.getConfig().getBoolean("debug")){
