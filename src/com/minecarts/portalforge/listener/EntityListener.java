@@ -4,18 +4,21 @@ import org.bukkit.entity.Animals;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPortalEnterEvent;
 import com.minecarts.portalforge.PortalForge;
 
 
-public class EntityListener extends org.bukkit.event.entity.EntityListener{
+public class EntityListener implements Listener {
 
     private PortalForge plugin;
     public EntityListener(PortalForge plugin){
         this.plugin = plugin;
     }
 
-    @Override
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityPortalEnter(EntityPortalEnterEvent e){
         Entity entity = e.getEntity();
         if(entity instanceof Player){

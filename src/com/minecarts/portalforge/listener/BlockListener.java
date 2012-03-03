@@ -8,20 +8,23 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import com.minecarts.portalforge.PortalForge;
 
-public class BlockListener extends org.bukkit.event.block.BlockListener{
+public class BlockListener implements Listener {
     private PortalForge plugin;
     private BlockFace[] faces = {BlockFace.NORTH,BlockFace.EAST,BlockFace.SOUTH,BlockFace.WEST, BlockFace.DOWN, BlockFace.UP};
     public BlockListener(PortalForge plugin){
         this.plugin = plugin;
     }
 
-    @Override
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockPlace(BlockPlaceEvent e){
         if(e.getBlock().getType() == Material.PORTAL || e.getBlock().getType() == Material.ENDER_PORTAL){
             //See if this player is editing a portal
@@ -40,7 +43,7 @@ public class BlockListener extends org.bukkit.event.block.BlockListener{
         }
     }
 
-    @Override
+    @EventHandler
     public void onBlockPhysics(BlockPhysicsEvent e){
         //Prevent portal blocks from updating
         if(e.getBlock().getType() == Material.PORTAL){
@@ -49,14 +52,14 @@ public class BlockListener extends org.bukkit.event.block.BlockListener{
     }
 
 
-    @Override
+    @EventHandler
     public void onBlockFromTo(BlockFromToEvent e){
         if(e.getToBlock().getType() == Material.PORTAL || e.getToBlock().getType() == Material.ENDER_PORTAL){
             e.setCancelled(true);
         }
     }
 
-    @Override
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onBlockBreak(BlockBreakEvent e){
         if(e.getBlock().getType() == Material.PORTAL || e.getBlock().getType() == Material.ENDER_PORTAL){
             GenericPortal portal = plugin.getEditingPortal(e.getPlayer());
