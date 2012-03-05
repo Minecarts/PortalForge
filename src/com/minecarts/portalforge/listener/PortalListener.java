@@ -15,21 +15,16 @@ public class PortalListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onCustomEvent(PortalSuccessEvent event){
-        if(event.getEventName().equals("PortalSuccessEvent")){
-            PortalSuccessEvent e = (PortalSuccessEvent) event;
-            if(e.isCancelled()) return;
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onCustomEvent(PortalSuccessEvent e){
+        GenericPortal portal = e.getPortal();
 
-            GenericPortal portal = e.getPortal();
-
-            if(portal.portalingEntityIsPlayer()){
-                plugin.log(portal.getPortalingPlayer().getName() + " used " + portal.getType().name() + " portal " + portal.getId());
-            } else {
-                plugin.log(portal.getPortalingEntity().getClass().getName() + " used " + portal.getType().name() + " portal " + portal.getId());
-            }
-
-            portal.teleportEntity();
+        if(portal.portalingEntityIsPlayer()){
+            plugin.log(portal.getPortalingPlayer().getName() + " used " + portal.getType().name() + " portal " + portal.getId());
+        } else {
+            plugin.log(portal.getPortalingEntity() + " used " + portal.getType().name() + " portal " + portal.getId());
         }
+
+        portal.teleportEntity();
     }
 }

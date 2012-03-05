@@ -1,9 +1,6 @@
 package com.minecarts.portalforge.listener;
 
-import org.bukkit.entity.Animals;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Monster;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -22,9 +19,9 @@ public class EntityListener implements Listener {
     public void onEntityPortalEnter(EntityPortalEnterEvent e){
         Entity entity = e.getEntity();
         if(entity instanceof Player){
-            plugin.entityTouchedPortal(entity, e.getLocation()); //This player touched a portal
-        } else if(entity instanceof Animals || entity instanceof Monster){
-            //plugin.entityUsedPortal(entity); //Non player entities should be teleported instantly
+            plugin.entityTouchedPortal(entity, e.getLocation());
+        } else if(entity instanceof Tameable){
+            plugin.entityUsedPortal(entity);
         } else {
             entity.remove(); //Remove thigns such as items immediately
         }
